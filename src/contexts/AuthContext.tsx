@@ -15,7 +15,7 @@ interface Profile {
 interface UserRole {
   id: string;
   user_id: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "instrutor";
 }
 
 interface AuthContextType {
@@ -24,6 +24,7 @@ interface AuthContextType {
   profile: Profile | null;
   roles: UserRole[];
   isAdmin: boolean;
+  isInstructor: boolean;
   isActive: boolean;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const isAdmin = roles.some((r) => r.role === "admin");
+  const isInstructor = roles.some((r) => r.role === "instrutor");
   const isActive = profile?.status === "active";
 
   const fetchProfile = async (userId: string) => {
@@ -135,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         roles,
         isAdmin,
+        isInstructor,
         isActive,
         loading,
         signUp,

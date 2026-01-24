@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, isAdmin, isInstructor, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,11 +36,24 @@ export default function Login() {
         title: "Bem-vindo!",
         description: "Login realizado com sucesso.",
       });
-      navigate("/dashboard");
+      // Redirect will be handled by useEffect based on roles
     }
 
     setIsLoading(false);
   };
+
+  // Redirect based on role after login
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (isAdmin) {
+        navigate("/admin");
+      } else if (isInstructor) {
+        navigate("/instrutor");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [user, isAdmin, isInstructor, authLoading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
