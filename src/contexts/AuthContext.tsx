@@ -47,23 +47,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isActive = profile?.status === "active";
 
   const fetchProfile = async (userId: string) => {
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
 
-    if (profileData) {
-      setProfile(profileData as Profile);
-    }
+      if (profileError) {
+        console.error("Erro ao buscar profile:", profileError);
+      }
 
-    const { data: rolesData } = await supabase
-      .from("user_roles")
-      .select("*")
-      .eq("user_id", userId);
+      if (profileData) {
+        setProfile(profileData as Profile);
+      }
 
-    if (rolesData) {
-      setRoles(rolesData as UserRole[]);
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (rolesError) {
+        console.error("Erro ao buscar roles:", rolesError);
+      }
+
+      if (rolesData && rolesData.length > 0) {
+        console.log("Roles carregados:", rolesData);
+        setRoles(rolesData as UserRole[]);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
     }
   };
 
