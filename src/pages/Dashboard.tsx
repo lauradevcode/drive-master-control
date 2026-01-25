@@ -171,7 +171,7 @@ export default function Dashboard() {
               <p className="text-muted-foreground text-sm">
                 Pratique com questões do DETRAN
               </p>
-              <Button className="w-full">Iniciar Simulado</Button>
+              <Button className="w-full" onClick={() => navigate("/simulado")}>Iniciar Simulado</Button>
             </CardContent>
           </Card>
 
