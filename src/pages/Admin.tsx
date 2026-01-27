@@ -45,17 +45,7 @@ export default function Admin() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    if (!loading && user && !isAdmin) {
-      navigate("/dashboard");
-    }
-  }, [user, isAdmin, loading, navigate]);
+  // Removed login check for demo purposes
 
   const fetchUsers = async () => {
     setLoadingUsers(true);

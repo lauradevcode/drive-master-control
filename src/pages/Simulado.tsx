@@ -34,11 +34,7 @@ export default function Simulado() {
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes in seconds
   const [showResult, setShowResult] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
+  // Removed login check for demo purposes
 
   // Timer
   useEffect(() => {
@@ -125,52 +121,8 @@ export default function Simulado() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
     navigate("/");
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isActive) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <Car className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">AutoEscola</span>
-            </Link>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-12">
-          <Card className="max-w-lg mx-auto border-warning bg-warning/5">
-            <CardContent className="p-6 text-center space-y-4">
-              <AlertCircle className="w-12 h-12 text-warning mx-auto" />
-              <h2 className="text-xl font-semibold">Acesso Restrito</h2>
-              <p className="text-muted-foreground">
-                Sua conta ainda não foi ativada. Aguarde a aprovação do administrador.
-              </p>
-              <Link to="/dashboard">
-                <Button variant="outline">Voltar ao Dashboard</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

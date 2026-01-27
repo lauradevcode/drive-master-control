@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import MaterialsList from "./MaterialsList";
 
 export default function Dashboard() {
   const { user, profile, isActive, isAdmin, signOut, loading } = useAuth();
@@ -41,67 +42,6 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isActive) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <Car className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">AutoEscola</span>
-            </Link>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </header>
-
-        <main className="container mx-auto px-4 py-12">
-          <div className="max-w-2xl mx-auto">
-            <Alert className="border-warning bg-warning/10">
-              <AlertCircle className="h-5 w-5 text-warning" />
-              <AlertTitle className="text-lg font-semibold">Conta Pendente de Aprovação</AlertTitle>
-              <AlertDescription className="mt-2 text-muted-foreground">
-                Sua conta ainda não foi ativada pelo administrador. 
-                Por favor, aguarde a aprovação para ter acesso completo ao sistema.
-                <br /><br />
-                Entraremos em contato assim que sua conta for ativada.
-              </AlertDescription>
-            </Alert>
-
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Seus Dados
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nome</p>
-                  <p className="font-medium">{profile?.full_name || "Não informado"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{user?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
-                    Aguardando Aprovação
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
       </div>
     );
   }
@@ -200,6 +140,11 @@ export default function Dashboard() {
               <Button variant="outline" className="w-full">Ver Relatório</Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Materials from Instructor */}
+        <div className="mt-8">
+          <MaterialsList showDeleteButton={false} />
         </div>
       </main>
     </div>
