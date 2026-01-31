@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import MaterialsList from "./MaterialsList";
 
 export default function Dashboard() {
-  const { user, profile, isActive, isAdmin, signOut, loading } = useAuth();
+  const { user, profile, isActive, isAdmin, isInstructor, signOut, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +32,12 @@ export default function Dashboard() {
       navigate("/admin");
     }
   }, [user, isAdmin, loading, navigate]);
+
+  useEffect(() => {
+    if (!loading && user && isInstructor) {
+      navigate("/instrutor");
+    }
+  }, [user, isInstructor, loading, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
