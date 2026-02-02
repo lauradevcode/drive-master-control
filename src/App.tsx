@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 import Dashboard from "./pages/Dashboard";
 import InstructorDashboard from "./pages/InstructorDashboard";
+import PendingAccount from "./pages/PendingAccount";
 import Simulado from "./pages/Simulado";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/pending" element={<PendingAccount />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/instrutor" element={<InstructorDashboard />} />
             <Route path="/simulado" element={<Simulado />} />

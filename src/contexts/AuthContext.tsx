@@ -46,6 +46,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInstructor = roles.some((r) => r.role === "instrutor");
   const isActive = true; // Sempre ativo - não precisa de aprovação
 
+  // Debug logs
+  console.log(" AuthContext Debug:");
+  console.log("- User:", user?.email);
+  console.log("- Profile status:", profile?.status);
+  console.log("- Roles:", roles);
+  console.log("- isAdmin:", isAdmin);
+  console.log("- isInstructor:", isInstructor);
+  console.log("- isActive:", isActive);
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data: profileData, error: profileError } = await supabase
