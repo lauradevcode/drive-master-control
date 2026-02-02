@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = roles.some((r) => r.role === "admin");
   const isInstructor = roles.some((r) => r.role === "instrutor");
-  const isActive = profile?.status === "active";
+  const isActive = true; // Sempre ativo - não precisa de aprovação
 
   const fetchProfile = async (userId: string) => {
     try {
