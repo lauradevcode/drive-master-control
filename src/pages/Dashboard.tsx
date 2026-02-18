@@ -27,18 +27,6 @@ export default function Dashboard() {
     }
   }, [user, loading, navigate]);
 
-  useEffect(() => {
-    if (!loading && user && isAdmin) {
-      navigate("/admin");
-    }
-  }, [user, isAdmin, loading, navigate]);
-
-  useEffect(() => {
-    if (!loading && user && isInstructor) {
-      navigate("/instrutor");
-    }
-  }, [user, isInstructor, loading, navigate]);
-
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
