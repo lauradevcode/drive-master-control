@@ -8,7 +8,6 @@ import {
   Car, 
   BookOpen, 
   Users, 
-  Upload,
   LogOut,
   Plus,
   FileText,
@@ -16,7 +15,8 @@ import {
   BarChart3,
   Menu,
   Home,
-  Settings
+  Settings,
+  Shield
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import MaterialsUpload from "./MaterialsUpload";
@@ -180,6 +180,12 @@ export default function InstructorDashboard() {
             </nav>
             
             <div className="flex items-center gap-4 pl-4 border-l">
+              {isAdmin && (
+                <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
+                  <Shield className="w-4 h-4 mr-2" />
+                  Painel Admin
+                </Button>
+              )}
               <span className="text-sm text-muted-foreground">
                 Olá, <span className="font-medium text-foreground">{profile?.full_name || user?.email}</span>
               </span>

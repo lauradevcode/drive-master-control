@@ -38,7 +38,7 @@ interface UserProfile {
 }
 
 export default function Admin() {
-  const { user, isAdmin, signOut, loading } = useAuth();
+  const { user, isAdmin, isInstructor, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -131,7 +131,12 @@ export default function Admin() {
             </Badge>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {isInstructor && (
+              <Button variant="outline" size="sm" onClick={() => navigate("/instrutor")}>
+                Painel Instrutor
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sair
