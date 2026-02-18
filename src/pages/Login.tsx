@@ -24,12 +24,18 @@ export default function Login() {
     const { error } = await signIn(email, password);
 
     if (error) {
+      let description = "Ocorreu um erro inesperado. Tente novamente.";
+      if (error.message === "Invalid login credentials") {
+        description = "Email ou senha incorretos.";
+      } else if (error.message?.includes("fetch") || error.message?.includes("network")) {
+        description = "Servidor indisponível. Verifique sua conexão e tente novamente.";
+      } else if (error.message) {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Erro ao entrar",
-        description: error.message === "Invalid login credentials" 
-          ? "Email ou senha incorretos" 
-          : error.message,
+        description,
       });
     } else {
       toast({

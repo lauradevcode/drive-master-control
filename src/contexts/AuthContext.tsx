@@ -46,21 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInstructor = roles.some((r) => r.role === "instrutor");
   const isActive = true; // Sempre ativo - não precisa de aprovação
 
-  // Debug logs
-  console.log(" AuthContext Debug:");
-  console.log("- User:", user?.email);
-  console.log("- Profile status:", profile?.status);
-  console.log("- Roles:", roles);
-  console.log("- isAdmin:", isAdmin);
-  console.log("- isInstructor:", isInstructor);
-  console.log("- isActive:", isActive);
+  // Debug removed for production
 
   const fetchProfile = async (userId: string) => {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", userId as any)
         .single();
 
       if (profileError) {
@@ -68,21 +61,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (profileData) {
-        setProfile(profileData as Profile);
+        setProfile(profileData as unknown as Profile);
       }
 
       const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
         .select("*")
-        .eq("user_id", userId);
+        .eq("user_id", userId as any);
 
       if (rolesError) {
         console.error("Erro ao buscar roles:", rolesError);
       }
 
       if (rolesData && rolesData.length > 0) {
-        console.log("Roles carregados:", rolesData);
-        setRoles(rolesData as UserRole[]);
+        setRoles(rolesData as unknown as UserRole[]);
       }
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);

@@ -78,7 +78,7 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
       const { error } = await supabase
         .from("materials" as unknown as "profiles")
         .delete()
-        .eq("id", material.id);
+        .eq("id", material.id as any);
 
       if (error && !error.message.includes("relation")) {
         throw error;
