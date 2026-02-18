@@ -61,7 +61,7 @@ export default function Admin() {
         description: "Não foi possível carregar os usuários.",
       });
     } else {
-      setUsers(data as UserProfile[]);
+      setUsers(data as unknown as UserProfile[]);
     }
     setLoadingUsers(false);
   };
@@ -83,8 +83,8 @@ export default function Admin() {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ status: newStatus })
-      .eq("user_id", userId);
+      .update({ status: newStatus } as any)
+      .eq("user_id", userId as any);
 
     if (error) {
       toast({
