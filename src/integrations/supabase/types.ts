@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      documentos_instrutor: {
+        Row: {
+          created_at: string
+          id: string
+          instrutor_id: string
+          nome_arquivo: string | null
+          tipo: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instrutor_id: string
+          nome_arquivo?: string | null
+          tipo: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instrutor_id?: string
+          nome_arquivo?: string | null
+          tipo?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_instrutor_instrutor_id_fkey"
+            columns: ["instrutor_id"]
+            isOneToOne: false
+            referencedRelation: "instrutores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instrutores: {
+        Row: {
+          categoria: string
+          cidade: string
+          cpf: string | null
+          created_at: string
+          credenciamento_numero: string | null
+          descricao: string | null
+          estado: string
+          full_name: string
+          id: string
+          photo_url: string | null
+          status: string
+          tipo_veiculo: string
+          updated_at: string
+          user_id: string | null
+          valor_aula: number | null
+          whatsapp: string
+        }
+        Insert: {
+          categoria: string
+          cidade: string
+          cpf?: string | null
+          created_at?: string
+          credenciamento_numero?: string | null
+          descricao?: string | null
+          estado: string
+          full_name: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          tipo_veiculo: string
+          updated_at?: string
+          user_id?: string | null
+          valor_aula?: number | null
+          whatsapp: string
+        }
+        Update: {
+          categoria?: string
+          cidade?: string
+          cpf?: string | null
+          created_at?: string
+          credenciamento_numero?: string | null
+          descricao?: string | null
+          estado?: string
+          full_name?: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          tipo_veiculo?: string
+          updated_at?: string
+          user_id?: string | null
+          valor_aula?: number | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -43,6 +135,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      solicitacoes_aula: {
+        Row: {
+          created_at: string
+          id: string
+          instrutor_id: string
+          melhor_horario: string | null
+          nome_aluno: string
+          observacao: string | null
+          status: string
+          telefone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instrutor_id: string
+          melhor_horario?: string | null
+          nome_aluno: string
+          observacao?: string | null
+          status?: string
+          telefone: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instrutor_id?: string
+          melhor_horario?: string | null
+          nome_aluno?: string
+          observacao?: string | null
+          status?: string
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_aula_instrutor_id_fkey"
+            columns: ["instrutor_id"]
+            isOneToOne: false
+            referencedRelation: "instrutores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
