@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, Download, Trash2, Loader2 } from "lucide-react";
+import { FileText, Download, Trash2, Loader2, PlayCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Material {
   id: string;
@@ -23,6 +24,7 @@ interface MaterialsListProps {
 
 export default function MaterialsList({ refreshTrigger, showDeleteButton = false }: MaterialsListProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -30,16 +32,13 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      // Try to fetch from database
       const { data, error } = await supabase
         .from("materials" as unknown as "profiles")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
-        // If table doesn't exist, use localStorage
         if (error.message.includes("relation") || error.message.includes("materials")) {
-          console.log("Usando fallback localStorage para materiais");
           const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
           setMaterials(localMaterials as Material[]);
         } else {
@@ -48,9 +47,7 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
       } else {
         setMaterials(data as unknown as Material[]);
       }
-    } catch (error) {
-      console.error("Error fetching materials:", error);
-      // Fallback to localStorage
+    } catch {
       const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
       setMaterials(localMaterials as Material[]);
     } finally {
@@ -67,43 +64,27 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
 
     setDeleting(material.id);
     try {
-      // Try to delete from storage
       if (material.file_path) {
-        await supabase.storage
-          .from("materials")
-          .remove([material.file_path]);
+        await supabase.storage.from("materials").remove([material.file_path]);
       }
 
-      // Try to delete from database
       const { error } = await supabase
         .from("materials" as unknown as "profiles")
         .delete()
         .eq("id", material.id as any);
 
-      if (error && !error.message.includes("relation")) {
-        throw error;
-      }
+      if (error && !error.message.includes("relation")) throw error;
 
-      // If database deletion failed, try localStorage
       if (error) {
         const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
         const filtered = localMaterials.filter((m: Material) => m.id !== material.id);
         localStorage.setItem("materials", JSON.stringify(filtered));
       }
 
-      toast({
-        title: "Sucesso",
-        description: "Material deletado com sucesso.",
-      });
-
+      toast({ title: "Sucesso", description: "Material deletado com sucesso." });
       fetchMaterials();
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível deletar o material.",
-      });
+    } catch {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível deletar o material." });
     } finally {
       setDeleting(null);
     }
@@ -111,55 +92,62 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
 
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-card border border-border shadow-sm">
         <CardContent className="p-8 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="bg-card border border-border shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FileText className="w-4 h-4" />
           Materiais Disponíveis
         </CardTitle>
-        <CardDescription>
-          {materials.length} material(is) enviado(s)
-        </CardDescription>
+        <CardDescription>{materials.length} material(is) enviado(s)</CardDescription>
       </CardHeader>
       <CardContent>
         {materials.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Nenhum material disponível ainda.</p>
+          <div className="text-center py-10">
+            <PlayCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
+            <p className="text-sm font-medium text-foreground">
+              Seus materiais aparecerão aqui assim que seu instrutor enviar o conteúdo.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Enquanto isso, que tal fazer um simulado?
+            </p>
+            <Button
+              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              onClick={() => navigate("/simulado")}
+            >
+              Iniciar Simulado
+            </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {materials.map((material) => (
               <div
                 key={material.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-primary" />
+                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-accent" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{material.title}</h4>
+                    <h4 className="font-medium text-sm truncate">{material.title}</h4>
                     {material.description && (
-                      <p className="text-sm text-muted-foreground truncate">
-                        {material.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{material.description}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
                       {new Date(material.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-2">
+                <div className="flex items-center gap-1 ml-2">
                   <a href={material.file_url} target="_blank" rel="noopener noreferrer">
                     <Button variant="ghost" size="sm">
                       <Download className="w-4 h-4" />

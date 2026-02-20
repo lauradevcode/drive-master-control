@@ -1,26 +1,31 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  Car, 
-  BookOpen, 
-  Users, 
-  LogOut,
-  Plus,
-  FileText,
-  Video,
-  BarChart3,
-  Menu,
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Home,
-  Settings,
-  Shield
+  Users,
+  FileText,
+  BookOpen,
+  BarChart3,
+  Upload,
+  TrendingUp,
+  Menu,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import MaterialsUpload from "./MaterialsUpload";
 import MaterialsList from "./MaterialsList";
+import InternalNavbar from "@/components/InternalNavbar";
+import { cn } from "@/lib/utils";
 
 interface LearningTrack {
   id: string;
@@ -30,254 +35,227 @@ interface LearningTrack {
   created_at: string;
 }
 
-export default function InstructorDashboard() {
-  const { user, profile, isInstructor, isAdmin, signOut, loading } = useAuth();
-  const navigate = useNavigate();
-  const [tracks, setTracks] = useState<LearningTrack[]>([]);
-  const [loadingTracks, setLoadingTracks] = useState(true);
-  const [refreshMaterials, setRefreshMaterials] = useState(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const navItems = [
+  { label: "Dashboard", href: "/instrutor", icon: Home },
+  { label: "Meus Alunos", href: "/instrutor/alunos", icon: Users },
+  { label: "Materiais", href: "/instrutor/materiais", icon: FileText },
+  { label: "Trilhas", href: "/instrutor/trilhas", icon: BookOpen },
+  { label: "Relatórios", href: "/instrutor/relatorios", icon: BarChart3 },
+];
 
-  // Removed login check for demo purposes
+const recentStudents = [
+  { name: "Ana Lima", progress: 72, lastActivity: "Há 2 horas" },
+  { name: "Carlos Souza", progress: 45, lastActivity: "Há 1 dia" },
+  { name: "Fernanda Costa", progress: 90, lastActivity: "Há 30 min" },
+  { name: "Roberto Silva", progress: 20, lastActivity: "Há 3 dias" },
+];
+
+export default function InstructorDashboard() {
+  const { user, profile, isInstructor, isAdmin, loading } = useAuth();
+  const location = useLocation();
+  const [tracks, setTracks] = useState<LearningTrack[]>([]);
+  const [refreshMaterials, setRefreshMaterials] = useState(0);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (user && (isInstructor || isAdmin)) {
-      fetchTracks();
-    }
+    if (user && (isInstructor || isAdmin)) fetchTracks();
   }, [user, isInstructor, isAdmin]);
 
   const fetchTracks = async () => {
-    setLoadingTracks(true);
     try {
-      // Table may not exist yet - handle gracefully
       const { data, error } = await supabase
         .from("learning_tracks" as unknown as "profiles")
         .select("*")
         .order("created_at", { ascending: false });
-      
-      if (!error && data) {
-        setTracks(data as unknown as LearningTrack[]);
-      }
+      if (!error && data) setTracks(data as unknown as LearningTrack[]);
     } catch {
       console.log("learning_tracks table not yet available");
     }
-    setLoadingTracks(false);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-secondary">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Mobile Optimized */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="px-4 h-16 flex items-center justify-between">
-          {/* Mobile Menu */}
-          <div className="lg:hidden">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64">
-                <div className="flex flex-col h-full">
-                  <div className="flex items-center gap-2 mb-8 mt-4">
-                    <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                      <Car className="w-5 h-5 text-primary-foreground" />
-                    </div>
-                    <span className="text-xl font-bold">AutoEscola</span>
-                  </div>
-                  
-                  <nav className="flex-1 space-y-4">
-                    <Link 
-                      to="/instrutor" 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Home className="w-4 h-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                    <Link 
-                      to="/materials" 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span>Materiais</span>
-                    </Link>
-                    <Link 
-                      to="/reports" 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <BarChart3 className="w-4 h-4" />
-                      <span>Relatórios</span>
-                    </Link>
-                    <Link 
-                      to="/settings" 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>Configurações</span>
-                    </Link>
-                  </nav>
-                  
-                  <div className="border-t pt-4 mt-auto">
-                    <div className="px-3 py-2">
-                      <p className="text-sm font-medium">{profile?.full_name || user?.email}</p>
-                      <p className="text-xs text-muted-foreground">Instrutor</p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start px-3 py-2"
-                      onClick={() => {
-                        handleSignOut();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Sair
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+  const stats = [
+    { label: "Alunos Ativos", value: "4", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Materiais Enviados", value: "0", icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Trilhas Criadas", value: tracks.length.toString(), icon: BookOpen, color: "text-violet-600", bg: "bg-violet-50" },
+    { label: "Taxa de Aprovação", value: "78%", icon: TrendingUp, color: "text-orange-600", bg: "bg-orange-50" },
+  ];
 
-          {/* Logo - Center on mobile, left on desktop */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-              <Car className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold hidden sm:block">AutoEscola</span>
-            <span className="text-xl font-bold sm:hidden">Auto</span>
-          </Link>
-
-          {/* Desktop Navigation & User Info */}
-          <div className="hidden lg:flex items-center gap-6">
-            <nav className="flex items-center gap-4">
-              <Link to="/instrutor" className="text-sm font-medium hover:text-primary transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/materials" className="text-sm font-medium hover:text-primary transition-colors">
-                Materiais
-              </Link>
-              <Link to="/reports" className="text-sm font-medium hover:text-primary transition-colors">
-                Relatórios
-              </Link>
-            </nav>
-            
-            <div className="flex items-center gap-4 pl-4 border-l">
-              {isAdmin && (
-                <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Painel Admin
-                </Button>
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
+    <aside className={cn(
+      "flex flex-col bg-card border-r border-border h-full",
+      mobile ? "w-full" : "w-56 shrink-0"
+    )}>
+      {mobile && (
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <span className="font-semibold text-sm">Menu</span>
+          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+      <nav className="flex-1 p-3 space-y-1 pt-4">
+        {navItems.map((item) => {
+          const active = location.pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                active
+                  ? "bg-accent/10 text-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
-              <span className="text-sm text-muted-foreground">
-                Olá, <span className="font-medium text-foreground">{profile?.full_name || user?.email}</span>
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sair
+            >
+              <item.icon className="w-4 h-4 shrink-0" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center shrink-0">
+            <span className="text-xs font-bold text-accent-foreground">
+              {(profile?.full_name || user?.email || "I")[0].toUpperCase()}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium truncate">{profile?.full_name || "Instrutor"}</p>
+            <p className="text-xs text-muted-foreground">Instrutor</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="min-h-screen bg-secondary flex flex-col">
+      <InternalNavbar />
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop sidebar */}
+        <div className="hidden md:flex">
+          <Sidebar />
+        </div>
+
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex">
+            <div className="w-64 h-full shadow-xl">
+              <Sidebar mobile />
+            </div>
+            <div className="flex-1 bg-black/40" onClick={() => setSidebarOpen(false)} />
+          </div>
+        )}
+
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto px-6 py-8">
+          {/* Page header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
               </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Painel do Instrutor</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Gerencie seus alunos e conteúdos
+                </p>
+              </div>
             </div>
+
+            {/* Upload modal trigger */}
+            <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Enviar Material
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Enviar Material</DialogTitle>
+                </DialogHeader>
+                <MaterialsUpload
+                  onUploadSuccess={() => {
+                    setRefreshMaterials((p) => p + 1);
+                    setUploadOpen(false);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
 
-          {/* User Avatar for mobile - Right side */}
-          <div className="lg:hidden">
-            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-xs font-medium text-primary">
-                {(profile?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
-              </span>
-            </div>
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat, i) => (
+              <Card key={i} className="bg-card border border-border shadow-sm">
+                <CardContent className="p-5">
+                  <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center mb-3`}>
+                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
-      </header>
 
-      <main className="w-full px-4 py-4 md:py-8">
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold">Painel do Instrutor</h1>
-          <p className="text-muted-foreground mt-1">
-            Gerencie suas trilhas de aprendizado e conteúdos
-          </p>
-        </div>
-
-        {/* Stats - Full width fluid layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8 w-full">
-          {[
-            { icon: BookOpen, label: "Trilhas Criadas", value: tracks.length.toString() },
-            { icon: FileText, label: "PDFs", value: "0" },
-            { icon: Video, label: "Vídeos", value: "0" },
-            { icon: Users, label: "Alunos Ativos", value: "4" },
-          ].map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow w-full h-full">
-              <CardContent className="p-4 md:p-6 h-full flex items-center">
-                <div className="flex items-center gap-3 md:gap-4 w-full">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <stat.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xl md:text-2xl font-bold truncate">{stat.value}</p>
-                    <p className="text-xs md:text-sm text-muted-foreground truncate">{stat.label}</p>
-                  </div>
+          {/* Bottom grid: recent students + materials */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Recent Students */}
+            <Card className="bg-card border border-border shadow-sm">
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-sm text-foreground mb-4 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Alunos Recentes
+                </h2>
+                <div className="space-y-4">
+                  {recentStudents.map((student, i) => (
+                    <div key={i}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-foreground">{student.name}</span>
+                        <span className="text-xs text-muted-foreground">{student.lastActivity}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-accent rounded-full transition-all"
+                            style={{ width: `${student.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-muted-foreground w-8 text-right">
+                          {student.progress}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Actions - Full width fluid grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8 w-full">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-dashed border-2 w-full h-full">
-            <CardContent className="p-4 md:p-6 text-center space-y-4 h-full flex flex-col justify-center">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                <Plus className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              </div>
-              <h3 className="text-lg md:text-xl font-semibold">Nova Trilha</h3>
-              <p className="text-muted-foreground text-xs md:text-sm">
-                Crie uma nova trilha de aprendizado
-              </p>
-              <Button className="w-full">Criar Trilha</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer w-full h-full">
-            <CardContent className="p-4 md:p-6 text-center space-y-4 h-full flex flex-col justify-center">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              </div>
-              <h3 className="text-lg md:text-xl font-semibold">Relatórios</h3>
-              <p className="text-muted-foreground text-xs md:text-sm">
-                Acompanhe o progresso dos alunos
-              </p>
-              <Button variant="outline" className="w-full">Ver Relatórios</Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Materials Upload - Full width */}
-        <div className="w-full mb-6 md:mb-8">
-          <MaterialsUpload onUploadSuccess={() => setRefreshMaterials(prev => prev + 1)} />
-        </div>
-
-        {/* Materials List - Full width */}
-        <div className="w-full">
-          <MaterialsList refreshTrigger={refreshMaterials} showDeleteButton={true} />
-        </div>
-      </main>
+            {/* Materials list */}
+            <MaterialsList refreshTrigger={refreshMaterials} showDeleteButton={true} />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

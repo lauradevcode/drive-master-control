@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Eye, EyeOff, Loader2, Shield, GraduationCap, Users } from "lucide-react";
+import { Car, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -13,7 +13,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showRoleSelector, setShowRoleSelector] = useState(false);
   const { signIn, isAdmin, isInstructor, user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,108 +47,21 @@ export default function Login() {
     setIsLoading(false);
   };
 
-  // Redirect based on roles after login
+  // Auto-redirect after login based on role — admin takes priority
   useEffect(() => {
     if (!authLoading && user && roles.length > 0) {
-      const hasMultipleSpecialRoles = isAdmin && isInstructor;
-
-      if (hasMultipleSpecialRoles) {
-        setShowRoleSelector(true);
-      } else if (isAdmin) {
+      if (isAdmin) {
         navigate("/admin");
       } else if (isInstructor) {
         navigate("/instrutor");
       } else {
         navigate("/dashboard");
       }
-    } else if (!authLoading && user && roles.length === 0) {
-      // User exists but roles not loaded yet — wait a bit
-      // roles will populate via fetchProfile
     }
   }, [user, roles, isAdmin, isInstructor, authLoading, navigate]);
 
-  const selectRole = (path: string) => {
-    setShowRoleSelector(false);
-    navigate(path);
-  };
-
-  if (showRoleSelector) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-        <div className="w-full max-w-lg space-y-6">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4">
-              <Car className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold">Escolha seu painel</h1>
-            <p className="text-muted-foreground mt-1">
-              Olá, {user?.email}! Você tem acesso a múltiplos painéis.
-            </p>
-          </div>
-
-          <div className="grid gap-4">
-            {isAdmin && (
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-[1.02]"
-                onClick={() => selectRole("/admin")}
-              >
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Shield className="w-7 h-7 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">Painel Admin</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Gerencie usuários, permissões e configurações do sistema
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {isInstructor && (
-              <Card
-                className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-[1.02]"
-                onClick={() => selectRole("/instrutor")}
-              >
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center">
-                    <GraduationCap className="w-7 h-7 text-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">Painel Instrutora</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Gerencie trilhas, materiais e acompanhe seus alunos
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card
-              className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-[1.02]"
-              onClick={() => selectRole("/dashboard")}
-            >
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 bg-muted rounded-xl flex items-center justify-center">
-                  <Users className="w-7 h-7 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">Painel Aluno</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Acesse simulados, materiais e acompanhe seu progresso
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2 mb-6">
@@ -160,7 +72,7 @@ export default function Login() {
           </Link>
         </div>
 
-        <Card className="border-0 shadow-xl">
+        <Card className="border border-border shadow-sm">
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
             <CardDescription className="text-center">
@@ -202,7 +114,7 @@ export default function Login() {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -215,7 +127,7 @@ export default function Login() {
             </form>
             <div className="mt-6 text-center text-sm">
               <span className="text-muted-foreground">Não tem uma conta? </span>
-              <Link to="/cadastro" className="text-primary hover:underline font-medium">
+              <Link to="/cadastro" className="text-accent hover:underline font-medium">
                 Cadastre-se
               </Link>
             </div>
