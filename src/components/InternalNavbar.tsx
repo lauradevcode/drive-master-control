@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Car, ChevronDown, ArrowLeftRight, User, Settings, LogOut } from "lucide-react";
+import { Car, ChevronDown, User, Settings, LogOut, ArrowLeftRight } from "lucide-react";
 
 interface InternalNavbarProps {
   navLinks?: { label: string; href: string }[];
@@ -31,7 +31,8 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
     .map((n) => n[0]?.toUpperCase())
     .join("");
 
-  const hasMultipleRoles = isAdmin && isInstructor;
+  const hasMultipleRoles = isAdmin || isInstructor;
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
   return (
     <header className="sticky top-0 z-50 h-16 bg-card border-b border-border shadow-sm flex items-center px-6">
@@ -60,23 +61,51 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-3 ml-auto">
-        {/* Role switcher for multi-role users */}
+        {/* Role switcher dropdown for multi-role users */}
         {hasMultipleRoles && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden sm:flex items-center gap-2 text-xs"
-            onClick={() => {
-              if (isAdmin && window.location.pathname === "/admin") {
-                navigate("/instrutor");
-              } else {
-                navigate("/admin");
-              }
-            }}
-          >
-            <ArrowLeftRight className="w-3 h-3" />
-            {window.location.pathname === "/admin" ? "Painel Instrutor" : "Painel Admin"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex items-center gap-2 text-xs"
+              >
+                <ArrowLeftRight className="w-3 h-3" />
+                Alternar Painel
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                Ir para
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {isAdmin && currentPath !== "/admin" && (
+                <DropdownMenuItem
+                  className="cursor-pointer text-sm"
+                  onClick={() => navigate("/admin")}
+                >
+                  Painel Admin
+                </DropdownMenuItem>
+              )}
+              {isInstructor && currentPath !== "/instrutor" && (
+                <DropdownMenuItem
+                  className="cursor-pointer text-sm"
+                  onClick={() => navigate("/instrutor")}
+                >
+                  Painel Instrutor
+                </DropdownMenuItem>
+              )}
+              {currentPath !== "/dashboard" && (
+                <DropdownMenuItem
+                  className="cursor-pointer text-sm"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Ver como Aluno
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
 
         {/* User dropdown */}
