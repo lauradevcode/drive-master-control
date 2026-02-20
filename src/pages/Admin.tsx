@@ -13,7 +13,8 @@ import {
   UserCheck,
   UserX,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  GraduationCap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +27,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import InstrutoresTab from "@/components/admin/InstrutoresTab";
 
 interface UserProfile {
   id: string;
@@ -149,143 +152,164 @@ export default function Admin() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Painel Administrativo</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie os usuários do sistema
+            Gerencie os usuários e instrutores do sistema
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{users.length}</p>
-                <p className="text-sm text-muted-foreground">Total de Usuários</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                <UserCheck className="w-5 h-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{activeUsers}</p>
-                <p className="text-sm text-muted-foreground">Usuários Ativos</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 bg-destructive/10 rounded-lg flex items-center justify-center">
-                <UserX className="w-5 h-5 text-destructive" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{inactiveUsers}</p>
-                <p className="text-sm text-muted-foreground">Aguardando Aprovação</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Users Table */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
+        <Tabs defaultValue="usuarios">
+          <TabsList className="mb-6">
+            <TabsTrigger value="usuarios" className="gap-2">
+              <Users className="w-4 h-4" />
               Usuários
-            </CardTitle>
-            <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loadingUsers}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loadingUsers ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {loadingUsers ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : users.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhum usuário cadastrado ainda.
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Telefone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Data de Cadastro</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((userProfile) => (
-                      <TableRow key={userProfile.id}>
-                        <TableCell className="font-medium">
-                          {userProfile.full_name || "Sem nome"}
-                        </TableCell>
-                        <TableCell>{userProfile.phone || "-"}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={userProfile.status === "active" ? "default" : "secondary"}
-                            className={userProfile.status === "active" 
-                              ? "bg-accent text-accent-foreground" 
-                              : "bg-warning/10 text-warning border-warning/20"
-                            }
-                          >
-                            {userProfile.status === "active" ? (
-                              <>
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Ativo
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Inativo
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(userProfile.created_at).toLocaleDateString("pt-BR")}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant={userProfile.status === "active" ? "destructive" : "default"}
-                            size="sm"
-                            onClick={() => toggleUserStatus(userProfile.user_id, userProfile.status)}
-                            disabled={updatingUser === userProfile.user_id}
-                          >
-                            {updatingUser === userProfile.user_id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : userProfile.status === "active" ? (
-                              <>
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Desativar
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Ativar
-                              </>
-                            )}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </TabsTrigger>
+            <TabsTrigger value="instrutores" className="gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Instrutores
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ───────────── Tab: Usuários ───────────── */}
+          <TabsContent value="usuarios" className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{users.length}</p>
+                    <p className="text-sm text-muted-foreground">Total de Usuários</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{activeUsers}</p>
+                    <p className="text-sm text-muted-foreground">Usuários Ativos</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-destructive/10 rounded-lg flex items-center justify-center">
+                    <UserX className="w-5 h-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{inactiveUsers}</p>
+                    <p className="text-sm text-muted-foreground">Aguardando Aprovação</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Users Table */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Usuários
+                </CardTitle>
+                <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loadingUsers}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loadingUsers ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {loadingUsers ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum usuário cadastrado ainda.
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Telefone</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Data de Cadastro</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((userProfile) => (
+                          <TableRow key={userProfile.id}>
+                            <TableCell className="font-medium">
+                              {userProfile.full_name || "Sem nome"}
+                            </TableCell>
+                            <TableCell>{userProfile.phone || "-"}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={userProfile.status === "active" ? "default" : "secondary"}
+                                className={userProfile.status === "active" 
+                                  ? "bg-accent text-accent-foreground" 
+                                  : "bg-warning/10 text-warning border-warning/20"
+                                }
+                              >
+                                {userProfile.status === "active" ? (
+                                  <>
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Ativo
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="w-3 h-3 mr-1" />
+                                    Inativo
+                                  </>
+                                )}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(userProfile.created_at).toLocaleDateString("pt-BR")}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant={userProfile.status === "active" ? "destructive" : "default"}
+                                size="sm"
+                                onClick={() => toggleUserStatus(userProfile.user_id, userProfile.status)}
+                                disabled={updatingUser === userProfile.user_id}
+                              >
+                                {updatingUser === userProfile.user_id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : userProfile.status === "active" ? (
+                                  <>
+                                    <XCircle className="w-4 h-4 mr-1" />
+                                    Desativar
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Ativar
+                                  </>
+                                )}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ───────────── Tab: Instrutores Marketplace ───────────── */}
+          <TabsContent value="instrutores">
+            <InstrutoresTab />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

@@ -13,6 +13,9 @@ import PendingAccount from "./pages/PendingAccount";
 import Simulado from "./pages/Simulado";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import InstrutoresMarketplace from "./pages/instrutores/Index";
+import PerfilInstrutor from "./pages/instrutores/Perfil";
+import CadastroInstrutor from "./pages/instrutores/Cadastro";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +35,10 @@ const App = () => (
             <Route path="/instrutor" element={<InstructorDashboard />} />
             <Route path="/simulado" element={<Simulado />} />
             <Route path="/admin" element={<Admin />} />
+            {/* Marketplace de Instrutores */}
+            <Route path="/instrutores" element={<InstrutoresMarketplace />} />
+            <Route path="/instrutores/:id" element={<PerfilInstrutor />} />
+            <Route path="/instrutores/cadastro" element={<CadastroInstrutor />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
