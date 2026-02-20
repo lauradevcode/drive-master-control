@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,11 +18,10 @@ import {
   MapPin,
   Search,
   SlidersHorizontal,
-  Star,
-  MessageCircle,
-  ArrowLeft,
-  Loader2,
   Users,
+  Loader2,
+  UserPlus,
+  ArrowLeft,
 } from "lucide-react";
 
 interface Instrutor {
@@ -43,6 +43,7 @@ const ESTADOS_BR = [
 
 export default function InstrutoresMarketplace() {
   const navigate = useNavigate();
+  const { user, isAdmin, isInstructor } = useAuth();
   const [instrutores, setInstrutores] = useState<Instrutor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchCidade, setSearchCidade] = useState("");
@@ -50,6 +51,10 @@ export default function InstrutoresMarketplace() {
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterEstado, setFilterEstado] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("nome");
+
+  // Quem pode se cadastrar como instrutor: apenas não-logados ou usuários sem role especial
+  // Admins e instrutores já têm seus painéis
+  const canRegisterAsInstrutor = !user || (!isAdmin && !isInstructor);
 
   useEffect(() => {
     fetchInstrutores();
@@ -106,15 +111,42 @@ export default function InstrutoresMarketplace() {
               <span className="font-bold text-lg">Instrutores</span>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            <Link to="/instrutores/cadastro">
-              <Button variant="outline" size="sm">
-                Sou Instrutor
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="sm">Entrar</Button>
-            </Link>
+            {/* Botão de cadastro: apenas para visitantes e alunos comuns */}
+            {canRegisterAsInstrutor && (
+              <Link to="/instrutores/cadastro">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <UserPlus className="w-4 h-4" />
+                  Sou Instrutor
+                </Button>
+              </Link>
+            )}
+
+            {/* Se está logado como instrutor, atalho pro painel */}
+            {isInstructor && !isAdmin && (
+              <Link to="/instrutor">
+                <Button variant="outline" size="sm">
+                  Meu Painel
+                </Button>
+              </Link>
+            )}
+
+            {/* Se é admin, atalho pro painel admin */}
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm">
+                  Painel Admin
+                </Button>
+              </Link>
+            )}
+
+            {/* Entrar — apenas para não logados */}
+            {!user && (
+              <Link to="/login">
+                <Button size="sm">Entrar</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -280,18 +312,23 @@ export default function InstrutoresMarketplace() {
         )}
       </main>
 
-      {/* Footer CTA */}
-      <div className="border-t bg-muted/30 mt-8">
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h3 className="font-semibold text-lg mb-2">É instrutor credenciado?</h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            Cadastre-se gratuitamente e apareça para centenas de alunos na sua cidade.
-          </p>
-          <Link to="/instrutores/cadastro">
-            <Button variant="outline">Quero me cadastrar</Button>
-          </Link>
+      {/* Footer CTA — apenas para visitantes e alunos */}
+      {canRegisterAsInstrutor && (
+        <div className="border-t bg-muted/30 mt-8">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <h3 className="font-semibold text-lg mb-2">É instrutor credenciado?</h3>
+            <p className="text-muted-foreground text-sm mb-4">
+              Cadastre-se gratuitamente e apareça para centenas de alunos na sua cidade.
+            </p>
+            <Link to="/instrutores/cadastro">
+              <Button variant="outline" className="gap-2">
+                <UserPlus className="w-4 h-4" />
+                Quero me cadastrar
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
