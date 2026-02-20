@@ -17,8 +17,12 @@ import {
   Shield,
   Clock,
   Target,
-  Headphones
+  Headphones,
+  Zap,
+  X
 } from "lucide-react";
+
+const BRAND = "CNH Pro";
 
 export default function Index() {
   return (
@@ -28,9 +32,9 @@ export default function Index() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
             <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-              <Car className="w-5 h-5 text-primary-foreground" />
+              <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">AutoEscola</span>
+            <span className="text-xl font-bold">{BRAND}</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">
@@ -112,7 +116,7 @@ export default function Index() {
               <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 pt-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2 transition-transform hover:scale-105">
                   <CheckCircle className="w-4 h-4 text-accent" />
-                  Sem cartão de crédito
+                  Plano gratuito disponível
                 </div>
                 <div className="flex items-center gap-2 transition-transform hover:scale-105">
                   <CheckCircle className="w-4 h-4 text-accent" />
@@ -120,7 +124,7 @@ export default function Index() {
                 </div>
                 <div className="flex items-center gap-2 transition-transform hover:scale-105">
                   <CheckCircle className="w-4 h-4 text-accent" />
-                  Suporte 24/7
+                  Suporte especializado
                 </div>
               </div>
             </ScrollReveal>
@@ -128,7 +132,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Pricing Section - Moved Up */}
+      {/* Pricing Section */}
       <section id="pricing" className="py-20 md:py-28 bg-muted/30">
         <div className="container mx-auto px-4">
           <ScrollReveal animation="fade-up">
@@ -143,52 +147,65 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
-                name: "Básico",
-                price: "R$ 99",
-                description: "Ideal para autoescolas iniciantes",
+                name: "Gratuito",
+                price: "R$ 0",
+                description: "Para começar a conhecer a plataforma",
                 features: [
-                  "Até 50 alunos",
+                  "Até 3 alunos",
                   "Simulados ilimitados",
-                  "Agendamento básico",
-                  "Suporte por email"
-                ]
+                  "Acesso ao marketplace",
+                ],
+                limitations: [
+                  "Sem agendamento de aulas",
+                  "Sem suporte por email",
+                ],
+                cta: "Criar conta grátis",
+                variant: "outline" as const,
+              },
+              {
+                name: "Básico",
+                price: "R$ 459,90",
+                description: "Ideal para autoescolas em crescimento",
+                popular: true,
+                features: [
+                  "Alunos ilimitados",
+                  "Simulados ilimitados",
+                  "Agendamento de aulas",
+                  "Relatórios básicos",
+                  "Suporte por email",
+                ],
+                limitations: [],
+                cta: "Começar Agora",
+                variant: "default" as const,
               },
               {
                 name: "Profissional",
-                price: "R$ 199",
-                description: "Para autoescolas em crescimento",
-                popular: true,
-                features: [
-                  "Até 200 alunos",
-                  "Simulados ilimitados",
-                  "Agendamento avançado",
-                  "Relatórios completos",
-                  "Suporte prioritário"
-                ]
-              },
-              {
-                name: "Enterprise",
-                price: "R$ 399",
-                description: "Para grandes operações",
+                price: "R$ 799,90",
+                description: "Para operações de alta performance",
                 features: [
                   "Alunos ilimitados",
-                  "Todas as funcionalidades",
-                  "API de integração",
-                  "Gestor de conta dedicado",
-                  "SLA garantido"
-                ]
-              }
+                  "Simulados ilimitados",
+                  "Agendamento avançado",
+                  "Relatórios completos + exportação",
+                  "Documentação e contratos digitais",
+                  "Certificados automáticos",
+                  "Suporte prioritário",
+                ],
+                limitations: [],
+                cta: "Começar Agora",
+                variant: "outline" as const,
+              },
             ].map((plan, index) => (
               <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
-                <Card 
-                  className={`border-0 shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${plan.popular ? 'ring-2 ring-primary scale-105' : ''}`}
+                <Card
+                  className={`border-0 shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col ${plan.popular ? "ring-2 ring-primary scale-105" : ""}`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium animate-pulse">
                       Mais Popular
                     </div>
                   )}
-                  <CardContent className="p-8 space-y-6">
+                  <CardContent className="p-8 space-y-6 flex flex-col flex-1">
                     <div className="space-y-2">
                       <h3 className="text-xl font-semibold">{plan.name}</h3>
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
@@ -197,20 +214,30 @@ export default function Index() {
                       <span className="text-4xl font-bold">{plan.price}</span>
                       <span className="text-muted-foreground">/mês</span>
                     </div>
-                    <ul className="space-y-3">
+
+                    {/* Included features */}
+                    <ul className="space-y-3 flex-1">
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-2 text-sm">
                           <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
                           {feature}
                         </li>
                       ))}
+                      {/* Limitations */}
+                      {plan.limitations.map((lim, i) => (
+                        <li key={`lim-${i}`} className="flex items-center gap-2 text-sm text-muted-foreground/70">
+                          <X className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
+                          {lim}
+                        </li>
+                      ))}
                     </ul>
-                    <Link to="/cadastro" className="block">
-                      <Button 
-                        className="w-full transition-all hover:scale-105" 
-                        variant={plan.popular ? "default" : "outline"}
+
+                    <Link to="/cadastro" className="block mt-auto">
+                      <Button
+                        className="w-full transition-all hover:scale-105"
+                        variant={plan.variant}
                       >
-                        Começar Agora
+                        {plan.cta}
                       </Button>
                     </Link>
                   </CardContent>
@@ -346,7 +373,7 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
               { icon: Phone, title: "Telefone", value: "(11) 99999-9999" },
-              { icon: Mail, title: "Email", value: "contato@autoescola.com" },
+              { icon: Mail, title: "Email", value: "contato@cnhpro.com.br" },
               { icon: MapPin, title: "Endereço", value: "São Paulo, SP - Brasil" }
             ].map((contact, index) => (
               <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
@@ -369,12 +396,12 @@ export default function Index() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Car className="w-4 h-4 text-primary-foreground" />
+                <Zap className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold">AutoEscola</span>
+              <span className="font-semibold">{BRAND}</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              © 2024 AutoEscola. Todos os direitos reservados.
+              © 2025 {BRAND}. Todos os direitos reservados.
             </p>
           </div>
         </div>
