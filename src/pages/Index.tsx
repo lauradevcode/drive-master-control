@@ -144,95 +144,117 @@ export default function Index() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               {
                 name: "Gratuito",
                 price: "R$ 0",
-                description: "Para começar a conhecer a plataforma",
+                badge: "14 dias trial",
+                badgeColor: "bg-accent/10 text-accent",
+                description: "Acesso completo por 14 dias. Sem cartão de crédito.",
                 features: [
-                  "Até 3 alunos",
-                  "Simulados ilimitados",
-                  "Acesso ao marketplace",
+                  "Acesso completo por 14 dias",
+                  "Alunos ilimitados no trial",
+                  "Simulados e agendamento",
+                  "Suporte por email",
+                  "Marketplace de instrutores",
                 ],
-                limitations: [
-                  "Sem agendamento de aulas",
-                  "Sem suporte por email",
-                ],
-                cta: "Criar conta grátis",
+                limitations: [],
+                cta: "Iniciar Trial Grátis",
                 variant: "outline" as const,
               },
               {
-                name: "Básico",
-                price: "R$ 459,90",
-                description: "Ideal para autoescolas em crescimento",
-                popular: true,
+                name: "Starter",
+                price: "R$ 249",
+                badge: null,
+                badgeColor: "",
+                description: "Para autoescolas que estão começando a crescer.",
                 features: [
-                  "Alunos ilimitados",
+                  "Até 100 alunos",
                   "Simulados ilimitados",
-                  "Agendamento de aulas",
-                  "Relatórios básicos",
+                  "Agendamento básico",
+                  "Relatórios essenciais",
                   "Suporte por email",
                 ],
                 limitations: [],
-                cta: "Começar Agora",
-                variant: "default" as const,
+                cta: "Assinar Starter",
+                variant: "outline" as const,
               },
               {
                 name: "Profissional",
-                price: "R$ 799,90",
-                description: "Para operações de alta performance",
+                price: "R$ 449",
+                badge: "Mais Popular",
+                badgeColor: "",
+                popular: true,
+                description: "O plano completo para autoescolas estabelecidas.",
                 features: [
                   "Alunos ilimitados",
                   "Simulados ilimitados",
                   "Agendamento avançado",
                   "Relatórios completos + exportação",
-                  "Documentação e contratos digitais",
+                  "Documentação digital",
                   "Certificados automáticos",
                   "Suporte prioritário",
                 ],
                 limitations: [],
-                cta: "Começar Agora",
+                cta: "Assinar Profissional",
+                variant: "default" as const,
+              },
+              {
+                name: "Premium",
+                price: "R$ 799",
+                badge: "Redes de Autoescolas",
+                badgeColor: "bg-primary/10 text-primary",
+                description: "Para redes com 2 ou mais unidades.",
+                features: [
+                  "Múltiplas unidades",
+                  "Gestão centralizada",
+                  "Dashboard por unidade",
+                  "Relatórios consolidados",
+                  "API de integração",
+                  "Gestor de conta dedicado",
+                  "SLA garantido",
+                  "Suporte 24/7",
+                ],
+                limitations: [],
+                cta: "Falar com Vendas",
                 variant: "outline" as const,
               },
             ].map((plan, index) => (
-              <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
+              <ScrollReveal key={index} animation="fade-up" delay={index * 80}>
                 <Card
-                  className={`border-0 shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col ${plan.popular ? "ring-2 ring-primary scale-105" : ""}`}
+                  className={`border-0 shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col ${plan.popular ? "ring-2 ring-primary" : ""}`}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium animate-pulse">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium whitespace-nowrap">
                       Mais Popular
                     </div>
                   )}
-                  <CardContent className="p-8 space-y-6 flex flex-col flex-1">
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold">{plan.name}</h3>
-                      <p className="text-sm text-muted-foreground">{plan.description}</p>
+                  {plan.badge && !plan.popular && (
+                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${plan.badgeColor} border border-current/20 px-3 py-0.5 rounded-full text-xs font-medium whitespace-nowrap`}>
+                      {plan.badge}
+                    </div>
+                  )}
+                  <CardContent className="p-6 space-y-5 flex flex-col flex-1">
+                    <div className="space-y-1 pt-2">
+                      <h3 className="text-lg font-semibold">{plan.name}</h3>
+                      <p className="text-xs text-muted-foreground leading-snug">{plan.description}</p>
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground">/mês</span>
+                      <span className="text-3xl font-bold">{plan.price}</span>
+                      <span className="text-muted-foreground text-sm">/mês</span>
                     </div>
 
-                    {/* Included features */}
-                    <ul className="space-y-3 flex-1">
+                    <ul className="space-y-2.5 flex-1">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
                           {feature}
-                        </li>
-                      ))}
-                      {/* Limitations */}
-                      {plan.limitations.map((lim, i) => (
-                        <li key={`lim-${i}`} className="flex items-center gap-2 text-sm text-muted-foreground/70">
-                          <X className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
-                          {lim}
                         </li>
                       ))}
                     </ul>
 
-                    <Link to="/cadastro" className="block mt-auto">
+                    <Link to={plan.name === "Premium" ? "#contact" : "/cadastro"} className="block mt-auto">
                       <Button
                         className="w-full transition-all hover:scale-105"
                         variant={plan.variant}
