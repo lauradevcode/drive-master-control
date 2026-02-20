@@ -1,328 +1,409 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { AnimatedStat } from "@/components/AnimatedStat";
-import { 
-  Car, 
-  BookOpen, 
-  Users, 
-  Award, 
-  CheckCircle, 
+import {
+  CalendarDays,
+  FileText,
+  BarChart3,
+  FileBadge,
+  HeadphonesIcon,
+  ShieldCheck,
+  CheckCircle2,
+  X,
   ArrowRight,
   Phone,
   Mail,
   MapPin,
-  Star,
-  Shield,
-  Clock,
-  Target,
-  Headphones,
+  Menu,
   Zap,
-  X
+  ChevronDown,
+  ChevronUp,
+  Star,
 } from "lucide-react";
 
 const BRAND = "CNH Pro";
 
-export default function Index() {
+// ─── Dados ────────────────────────────────────────────────────
+const BENEFITS = [
+  { icon: CalendarDays, title: "Agendamento inteligente", desc: "Aulas e provas organizadas sem conflitos de horário." },
+  { icon: FileText,     title: "Simulados ilimitados",   desc: "Prepare seus alunos para a prova do DETRAN com questões atualizadas." },
+  { icon: BarChart3,    title: "Relatórios em tempo real", desc: "Acompanhe o desempenho de cada aluno com métricas detalhadas." },
+  { icon: FileBadge,    title: "Documentos digitais",    desc: "Contratos e certificados gerados e assinados automaticamente." },
+  { icon: HeadphonesIcon, title: "Suporte prioritário",  desc: "Time especializado disponível para te ajudar quando precisar." },
+  { icon: ShieldCheck,  title: "Segurança dos dados",    desc: "Seus dados e os dos alunos sempre protegidos e em conformidade com LGPD." },
+];
+
+const PLANS = [
+  {
+    name: "Gratuito",
+    price: "R$ 0",
+    badge: "14 dias trial",
+    badgeCls: "bg-muted text-muted-foreground",
+    desc: "Acesso completo por 14 dias. Sem cartão de crédito.",
+    ringCls: "border border-border",
+    btnVariant: "outline" as const,
+    btnLabel: "Iniciar Trial Grátis",
+    href: "/cadastro",
+    note: "Após 14 dias, escolha um plano para continuar.",
+    features: [
+      { label: "Alunos ilimitados durante o trial", ok: true },
+      { label: "Simulados ilimitados", ok: true },
+      { label: "Agendamento de aulas", ok: true },
+      { label: "Marketplace de instrutores", ok: true },
+      { label: "Suporte por email", ok: true },
+    ],
+  },
+  {
+    name: "Starter",
+    price: "R$ 249",
+    badge: "Mais Acessível",
+    badgeCls: "bg-success/10 text-success border border-success/20",
+    desc: "Para autoescolas que estão começando a crescer.",
+    ringCls: "border-2 border-success/60",
+    btnVariant: "outline" as const,
+    btnLabel: "Assinar Starter",
+    href: "/cadastro",
+    note: null,
+    features: [
+      { label: "Até 50 alunos ativos", ok: true },
+      { label: "Simulados ilimitados", ok: true },
+      { label: "Agendamento básico de aulas", ok: true },
+      { label: "Relatórios essenciais", ok: true },
+      { label: "Suporte por email", ok: true },
+      { label: "Documentação digital", ok: false },
+      { label: "Certificados automáticos", ok: false },
+      { label: "Suporte prioritário", ok: false },
+    ],
+  },
+  {
+    name: "Profissional",
+    price: "R$ 449",
+    badge: "Recomendado",
+    badgeCls: "bg-accent/10 text-accent border border-accent/20",
+    popular: true,
+    desc: "O plano completo para autoescolas estabelecidas.",
+    ringCls: "border-2 border-accent",
+    btnVariant: "default" as const,
+    btnLabel: "Assinar Profissional",
+    href: "/cadastro",
+    note: null,
+    features: [
+      { label: "Alunos ilimitados", ok: true },
+      { label: "Simulados ilimitados", ok: true },
+      { label: "Agendamento avançado", ok: true },
+      { label: "Relatórios completos + exportação CSV/PDF", ok: true },
+      { label: "Documentação e contratos digitais", ok: true },
+      { label: "Certificados automáticos", ok: true },
+      { label: "Suporte prioritário", ok: true },
+    ],
+  },
+  {
+    name: "Premium",
+    price: "R$ 799",
+    badge: "Redes de Autoescolas",
+    badgeCls: "bg-primary/10 text-primary border border-primary/20",
+    desc: "Para redes com 2 ou mais unidades.",
+    ringCls: "border border-primary/30",
+    btnVariant: "outline" as const,
+    btnLabel: "Falar com Vendas",
+    href: "#contact",
+    note: null,
+    features: [
+      { label: "Múltiplas unidades no mesmo painel", ok: true },
+      { label: "Gestão centralizada de instrutores", ok: true },
+      { label: "Dashboard individual por unidade", ok: true },
+      { label: "Relatórios consolidados da rede", ok: true },
+      { label: "API de integração", ok: true },
+      { label: "Gestor de conta dedicado", ok: true },
+      { label: "SLA garantido", ok: true },
+      { label: "Suporte 24/7", ok: true },
+    ],
+  },
+];
+
+const COMPARISON = [
+  { feature: "Nº de alunos",          trial: "Ilimitado (14d)", starter: "Até 50", pro: "Ilimitado", premium: "Ilimitado" },
+  { feature: "Simulados",             trial: "✓", starter: "✓", pro: "✓", premium: "✓" },
+  { feature: "Agendamento",           trial: "✓", starter: "Básico", pro: "Avançado", premium: "Avançado" },
+  { feature: "Relatórios",            trial: "✓", starter: "Essenciais", pro: "Completos + Export", premium: "Consolidados" },
+  { feature: "Documentos digitais",   trial: "✓", starter: "✗", pro: "✓", premium: "✓" },
+  { feature: "Certificados auto.",     trial: "✓", starter: "✗", pro: "✓", premium: "✓" },
+  { feature: "Suporte",               trial: "Email", starter: "Email", pro: "Prioritário", premium: "24/7 + Gestor" },
+  { feature: "Múltiplas unidades",    trial: "✗", starter: "✗", pro: "✗", premium: "✓" },
+];
+
+const FAQS = [
+  {
+    q: "Preciso de cartão de crédito para começar?",
+    a: "Não! O plano gratuito (trial de 14 dias) não exige nenhum dado de pagamento. Você só precisa criar uma conta."
+  },
+  {
+    q: "Posso cancelar a qualquer momento?",
+    a: "Sim, sem multas ou burocracia. Você pode cancelar sua assinatura quando quiser diretamente pelo painel."
+  },
+  {
+    q: "O sistema funciona em celular?",
+    a: "Sim! A plataforma é 100% responsiva e foi projetada para funcionar perfeitamente em qualquer dispositivo — celular, tablet ou computador."
+  },
+  {
+    q: "Tenho suporte para configurar o sistema?",
+    a: "Sim, nosso time está disponível para ajudar na configuração inicial e sempre que você precisar."
+  },
+];
+
+const LOGOS_PLACEHOLDER = [
+  { name: "AutoEscola Rápido", letter: "R", color: "bg-blue-100 text-blue-700" },
+  { name: "CFC Central",       letter: "C", color: "bg-green-100 text-green-700" },
+  { name: "Dirigir Plus",      letter: "D", color: "bg-purple-100 text-purple-700" },
+  { name: "Habilitação SP",    letter: "H", color: "bg-orange-100 text-orange-700" },
+  { name: "MetaCNH",           letter: "M", color: "bg-red-100 text-red-700" },
+];
+
+// ─── Componente FAQ item ────────────────────────────────────────
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <div className="border-b border-border last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-4 py-5 text-left font-display font-semibold text-foreground hover:text-accent transition-colors"
+      >
+        {q}
+        {open ? <ChevronUp className="w-5 h-5 flex-shrink-0 text-accent" /> : <ChevronDown className="w-5 h-5 flex-shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <p className="pb-5 text-muted-foreground leading-relaxed text-sm">{a}</p>
+      )}
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────
+export default function Index() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-background overflow-x-hidden font-sans">
+
+      {/* ── NAVBAR ── */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-            <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+              <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold">{BRAND}</span>
+            <span className="font-display text-xl font-bold text-foreground">{BRAND}</span>
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full">
-              Planos
-            </a>
-            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full">
-              Recursos
-            </a>
-            <Link to="/instrutores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full">
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-7">
+            {[
+              { label: "Planos", href: "#pricing" },
+              { label: "Recursos", href: "#features" },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                {label}
+              </a>
+            ))}
+            <Link to="/instrutores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Instrutores
             </Link>
-            <Link to="/simulado" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full">
+            <Link to="/simulado" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Simulado
             </Link>
-            <a href="#contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all hover:after:w-full">
+            <a href="#contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Contato
             </a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* CTA */}
+          <div className="hidden md:flex items-center gap-3">
             <Link to="/login">
-              <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
-                Entrar
-              </Button>
+              <Button variant="ghost" size="sm">Entrar</Button>
             </Link>
             <Link to="/cadastro">
-              <Button size="sm" className="transition-all hover:scale-105 hover:shadow-lg">
-                Começar Agora
+              <Button size="sm" className="bg-accent hover:bg-accent/90 text-white shadow-md hover:shadow-lg transition-all hover:scale-105">
+                Começar grátis
               </Button>
             </Link>
           </div>
+
+          {/* Mobile hamburger */}
+          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-white px-4 py-4 flex flex-col gap-3 animate-fade-in">
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Planos</a>
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Recursos</a>
+            <Link to="/instrutores" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Instrutores</Link>
+            <Link to="/simulado" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Simulado</Link>
+            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Contato</a>
+            <div className="flex gap-2 pt-2 border-t border-border">
+              <Link to="/login" className="flex-1"><Button variant="outline" className="w-full" size="sm">Entrar</Button></Link>
+              <Link to="/cadastro" className="flex-1"><Button className="w-full bg-accent hover:bg-accent/90 text-white" size="sm">Começar grátis</Button></Link>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 md:py-32 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgwLDAsMCwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <ScrollReveal animation="fade-up" delay={0}>
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-                <Star className="w-4 h-4" />
-                Sistema completo para autoescolas
-              </div>
-            </ScrollReveal>
-            
-            <ScrollReveal animation="fade-up" delay={100}>
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-                Gestão de Autoescola 
-                <span className="gradient-text"> Simplificada</span>
-              </h1>
-            </ScrollReveal>
-            
+      {/* ── HERO ── */}
+      <section className="relative bg-gradient-to-br from-white via-secondary/60 to-secondary overflow-hidden">
+        {/* Decoração de fundo */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl pointer-events-none" />
+
+        <div className="container mx-auto px-4 py-20 md:py-28 lg:py-32 relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Copy */}
+            <div className="space-y-7 text-center lg:text-left">
+              <ScrollReveal animation="fade-up" delay={0}>
+                <div className="inline-flex items-center gap-2 bg-accent/10 text-accent border border-accent/20 px-4 py-1.5 rounded-full text-sm font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  Plataforma #1 para autoescolas no Brasil
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal animation="fade-up" delay={80}>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] text-foreground">
+                  Gerencie sua autoescola{" "}
+                  <span className="gradient-text">do zero ao certificado</span>
+                  {" "}— tudo em um só lugar
+                </h1>
+              </ScrollReveal>
+
+              <ScrollReveal animation="fade-up" delay={160}>
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
+                  Agendamento, simulados, relatórios e documentos digitais. Para autoescolas que querem crescer sem complicação.
+                </p>
+              </ScrollReveal>
+
+              <ScrollReveal animation="fade-up" delay={240}>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                  <Link to="/cadastro">
+                    <Button size="lg" className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-white text-base px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105 group">
+                      Começar grátis agora
+                      <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </Link>
+                  <a href="#features">
+                    <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-8 border-primary/30 hover:border-primary transition-all hover:scale-105">
+                      Ver demonstração
+                    </Button>
+                  </a>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal animation="fade-up" delay={320}>
+                <p className="text-sm text-muted-foreground flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-1">
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> Sem cartão de crédito</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> 14 dias grátis</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> Suporte incluso</span>
+                </p>
+              </ScrollReveal>
+            </div>
+
+            {/* Dashboard mockup */}
             <ScrollReveal animation="fade-up" delay={200}>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Plataforma completa para gerenciar alunos, aulas, simulados e muito mais. 
-                Tudo o que você precisa para sua autoescola crescer.
-              </p>
-            </ScrollReveal>
-            
-            <ScrollReveal animation="fade-up" delay={300}>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/cadastro">
-                  <Button size="lg" className="text-lg px-8 transition-all hover:scale-105 hover:shadow-xl group">
-                    Começar Gratuitamente
-                    <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-                <a href="#pricing">
-                  <Button variant="outline" size="lg" className="text-lg px-8 transition-all hover:scale-105 hover:shadow-lg">
-                    Ver Planos
-                  </Button>
-                </a>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal animation="fade-up" delay={400}>
-              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 pt-8 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2 transition-transform hover:scale-105">
-                  <CheckCircle className="w-4 h-4 text-accent" />
-                  Plano gratuito disponível
-                </div>
-                <div className="flex items-center gap-2 transition-transform hover:scale-105">
-                  <CheckCircle className="w-4 h-4 text-accent" />
-                  Setup em 5 minutos
-                </div>
-                <div className="flex items-center gap-2 transition-transform hover:scale-105">
-                  <CheckCircle className="w-4 h-4 text-accent" />
-                  Suporte especializado
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 md:py-28 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <ScrollReveal animation="fade-up">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold">Planos e Preços</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Escolha o plano ideal para o tamanho da sua autoescola
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              {
-                name: "Gratuito",
-                price: "R$ 0",
-                badge: "14 dias trial",
-                badgeColor: "bg-accent/10 text-accent",
-                description: "Acesso completo por 14 dias. Sem cartão de crédito.",
-                features: [
-                  "Acesso completo por 14 dias",
-                  "Alunos ilimitados no trial",
-                  "Simulados e agendamento",
-                  "Suporte por email",
-                  "Marketplace de instrutores",
-                ],
-                limitations: [],
-                cta: "Iniciar Trial Grátis",
-                variant: "outline" as const,
-              },
-              {
-                name: "Starter",
-                price: "R$ 249",
-                badge: null,
-                badgeColor: "",
-                description: "Para autoescolas que estão começando a crescer.",
-                features: [
-                  "Até 100 alunos",
-                  "Simulados ilimitados",
-                  "Agendamento básico",
-                  "Relatórios essenciais",
-                  "Suporte por email",
-                ],
-                limitations: [],
-                cta: "Assinar Starter",
-                variant: "outline" as const,
-              },
-              {
-                name: "Profissional",
-                price: "R$ 449",
-                badge: "Mais Popular",
-                badgeColor: "",
-                popular: true,
-                description: "O plano completo para autoescolas estabelecidas.",
-                features: [
-                  "Alunos ilimitados",
-                  "Simulados ilimitados",
-                  "Agendamento avançado",
-                  "Relatórios completos + exportação",
-                  "Documentação digital",
-                  "Certificados automáticos",
-                  "Suporte prioritário",
-                ],
-                limitations: [],
-                cta: "Assinar Profissional",
-                variant: "default" as const,
-              },
-              {
-                name: "Premium",
-                price: "R$ 799",
-                badge: "Redes de Autoescolas",
-                badgeColor: "bg-primary/10 text-primary",
-                description: "Para redes com 2 ou mais unidades.",
-                features: [
-                  "Múltiplas unidades",
-                  "Gestão centralizada",
-                  "Dashboard por unidade",
-                  "Relatórios consolidados",
-                  "API de integração",
-                  "Gestor de conta dedicado",
-                  "SLA garantido",
-                  "Suporte 24/7",
-                ],
-                limitations: [],
-                cta: "Falar com Vendas",
-                variant: "outline" as const,
-              },
-            ].map((plan, index) => (
-              <ScrollReveal key={index} animation="fade-up" delay={index * 80}>
-                <Card
-                  className={`border-0 shadow-lg relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col ${plan.popular ? "ring-2 ring-primary" : ""}`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium whitespace-nowrap">
-                      Mais Popular
+              <div className="relative lg:block">
+                <div className="bg-white rounded-2xl shadow-2xl border border-border overflow-hidden">
+                  {/* Mockup top bar */}
+                  <div className="bg-primary px-4 py-3 flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-white/30" />
+                      <div className="w-3 h-3 rounded-full bg-white/30" />
+                      <div className="w-3 h-3 rounded-full bg-white/30" />
                     </div>
-                  )}
-                  {plan.badge && !plan.popular && (
-                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${plan.badgeColor} border border-current/20 px-3 py-0.5 rounded-full text-xs font-medium whitespace-nowrap`}>
-                      {plan.badge}
-                    </div>
-                  )}
-                  <CardContent className="p-6 space-y-5 flex flex-col flex-1">
-                    <div className="space-y-1 pt-2">
-                      <h3 className="text-lg font-semibold">{plan.name}</h3>
-                      <p className="text-xs text-muted-foreground leading-snug">{plan.description}</p>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground text-sm">/mês</span>
-                    </div>
-
-                    <ul className="space-y-2.5 flex-1">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                          {feature}
-                        </li>
+                    <div className="flex-1 bg-white/20 rounded-full h-5 mx-4" />
+                    <div className="w-6 h-6 rounded-full bg-white/30" />
+                  </div>
+                  {/* Mockup body */}
+                  <div className="p-5 space-y-4 bg-secondary/30">
+                    {/* Stats row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: "Alunos Ativos", val: "247", color: "bg-accent/10 text-accent" },
+                        { label: "Aulas Hoje",    val: "18",  color: "bg-success/10 text-success" },
+                        { label: "Aprovações",    val: "98%", color: "bg-primary/10 text-primary" },
+                      ].map((s) => (
+                        <div key={s.label} className="bg-white rounded-xl p-3 text-center shadow-sm">
+                          <div className={`text-2xl font-display font-bold ${s.color}`}>{s.val}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+                    {/* Fake table */}
+                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                      <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+                        <span className="text-xs font-semibold text-foreground">Últimos agendamentos</span>
+                        <span className="text-xs text-accent font-medium">Ver todos</span>
+                      </div>
+                      {["Ana Lima • 14h00", "Carlos Mota • 15h30", "Priscila S. • 17h00"].map((r, i) => (
+                        <div key={i} className={`px-4 py-2.5 flex items-center justify-between text-xs ${i < 2 ? "border-b border-border" : ""}`}>
+                          <span className="text-muted-foreground">{r}</span>
+                          <span className="bg-success/10 text-success px-2 py-0.5 rounded-full text-[10px] font-semibold">Confirmado</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {/* Glow */}
+                <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-accent/20 rounded-full blur-2xl -z-10" />
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
 
-                    <Link to={plan.name === "Premium" ? "#contact" : "/cadastro"} className="block mt-auto">
-                      <Button
-                        className="w-full transition-all hover:scale-105"
-                        variant={plan.variant}
-                      >
-                        {plan.cta}
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-            ))}
+        {/* Social proof logos */}
+        <div className="border-t border-border/50 bg-white/60 backdrop-blur">
+          <div className="container mx-auto px-4 py-6">
+            <p className="text-center text-xs text-muted-foreground mb-5 uppercase tracking-widest font-semibold">
+              Usado por autoescolas em todo o Brasil
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+              {LOGOS_PLACEHOLDER.map((l) => (
+                <div key={l.name} className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+                  <div className={`w-8 h-8 rounded-lg ${l.color} flex items-center justify-center font-display font-bold text-sm`}>
+                    {l.letter}
+                  </div>
+                  <span className="text-sm font-semibold text-muted-foreground hidden sm:block">{l.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 md:py-28">
+      {/* ── BENEFÍCIOS ── */}
+      <section id="features" className="py-20 md:py-28 bg-white">
         <div className="container mx-auto px-4">
           <ScrollReveal animation="fade-up">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold">Tudo que você precisa</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Recursos completos para modernizar a gestão da sua autoescola
+            <div className="text-center space-y-3 mb-14">
+              <p className="text-accent font-semibold text-sm uppercase tracking-widest">Recursos</p>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Tudo que sua autoescola precisa</h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Uma plataforma completa para modernizar cada etapa da gestão da sua autoescola.
               </p>
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Users,
-                title: "Gestão de Alunos",
-                description: "Cadastre e acompanhe todos os seus alunos em um só lugar, com histórico completo."
-              },
-              {
-                icon: BookOpen,
-                title: "Simulados Online",
-                description: "Banco de questões atualizado com mais de 1000 perguntas para seus alunos praticarem."
-              },
-              {
-                icon: Clock,
-                title: "Agendamento de Aulas",
-                description: "Sistema inteligente para agendar aulas teóricas e práticas sem conflitos."
-              },
-              {
-                icon: Target,
-                title: "Acompanhamento",
-                description: "Monitore o progresso de cada aluno com relatórios detalhados e métricas."
-              },
-              {
-                icon: Shield,
-                title: "Documentação",
-                description: "Geração automática de documentos e contratos com assinatura digital."
-              },
-              {
-                icon: Award,
-                title: "Certificados",
-                description: "Emita certificados de conclusão personalizados automaticamente."
-              }
-            ].map((feature, index) => (
-              <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
-                <Card className="border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group cursor-pointer">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {BENEFITS.map((b, i) => (
+              <ScrollReveal key={i} animation="fade-up" delay={i * 80}>
+                <Card className="group border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white h-full">
                   <CardContent className="p-6 space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
-                      <feature.icon className="w-6 h-6 text-primary transition-colors group-hover:text-primary-foreground" />
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent transition-colors duration-300">
+                      <b.icon className="w-5 h-5 text-accent group-hover:text-white transition-colors duration-300" />
                     </div>
-                    <h3 className="text-xl font-semibold">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="font-display text-base font-bold text-foreground">{b.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
                   </CardContent>
                 </Card>
               </ScrollReveal>
@@ -331,20 +412,11 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Stats Section with Animated Counters */}
-      <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+      {/* ── STATS ── */}
+      <section className="py-16 bg-primary text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_hsl(221,83%,60%)_0%,_transparent_60%)]" />
         <div className="container mx-auto px-4 relative">
-          <ScrollReveal animation="fade-up">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Números que impressionam</h2>
-              <p className="text-primary-foreground/80 text-lg">
-                Junte-se a centenas de autoescolas que já confiam em nós
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <ScrollReveal animation="fade-up" delay={0}>
               <AnimatedStat value={500} suffix="+" label="Autoescolas" duration={2000} />
             </ScrollReveal>
@@ -355,33 +427,190 @@ export default function Index() {
               <AnimatedStat value={98} suffix="%" label="Taxa de Aprovação" duration={2000} />
             </ScrollReveal>
             <ScrollReveal animation="fade-up" delay={300}>
-              <div className="space-y-2 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Headphones className="w-8 h-8" />
-                  <span className="text-3xl md:text-5xl font-bold">24/7</span>
-                </div>
-                <div className="text-primary-foreground/80 text-sm md:text-base">Suporte Dedicado</div>
+              <div className="space-y-2">
+                <div className="text-4xl md:text-5xl font-display font-bold">24/7</div>
+                <div className="text-white/70 text-sm">Suporte Dedicado</div>
               </div>
             </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 md:py-28">
+      {/* ── PREÇOS ── */}
+      <section id="pricing" className="py-20 md:py-28 section-bg">
+        <div className="container mx-auto px-4">
+          <ScrollReveal animation="fade-up">
+            <div className="text-center space-y-3 mb-14">
+              <p className="text-accent font-semibold text-sm uppercase tracking-widest">Preços</p>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Planos e Preços</h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                Escolha o plano ideal para o tamanho da sua autoescola
+              </p>
+            </div>
+          </ScrollReveal>
+
+          {/* Cards */}
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
+            {PLANS.map((plan, i) => (
+              <ScrollReveal key={plan.name} animation="fade-up" delay={i * 80}>
+                <Card className={`relative flex flex-col h-full bg-white ${plan.ringCls} hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}>
+                  <CardContent className="p-6 flex flex-col flex-1 gap-5">
+                    {/* Badge */}
+                    <div>
+                      <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${plan.badgeCls}`}>
+                        {plan.badge}
+                      </span>
+                    </div>
+
+                    {/* Name & price */}
+                    <div>
+                      <h3 className="font-display text-xl font-bold text-foreground mb-1">{plan.name}</h3>
+                      <p className="text-xs text-muted-foreground mb-3 leading-snug">{plan.desc}</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-display text-3xl font-bold text-foreground">{plan.price}</span>
+                        <span className="text-muted-foreground text-sm">/mês</span>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <ul className="space-y-2.5 flex-1">
+                      {plan.features.map((f, j) => (
+                        <li key={j} className={`flex items-start gap-2 text-sm ${!f.ok ? "text-muted-foreground/50 line-through" : "text-foreground"}`}>
+                          {f.ok
+                            ? <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                            : <X className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5" />
+                          }
+                          {f.label}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* CTA */}
+                    <div className="space-y-2">
+                      <Link to={plan.href} className="block">
+                        <Button
+                          variant={plan.btnVariant}
+                          className={`w-full transition-all hover:scale-105 ${plan.popular ? "bg-accent hover:bg-accent/90 text-white border-0" : ""}`}
+                        >
+                          {plan.btnLabel}
+                        </Button>
+                      </Link>
+                      {plan.note && (
+                        <p className="text-[11px] text-muted-foreground text-center leading-tight">{plan.note}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          {/* Garantia */}
+          <ScrollReveal animation="fade-up">
+            <p className="text-center text-sm text-muted-foreground flex flex-wrap justify-center gap-x-6 gap-y-1 mb-14">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> 14 dias grátis em todos os planos</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> Sem cartão de crédito no trial</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success" /> Cancele quando quiser</span>
+            </p>
+          </ScrollReveal>
+
+          {/* Tabela comparativa */}
+          <ScrollReveal animation="fade-up">
+            <div className="max-w-5xl mx-auto overflow-x-auto rounded-2xl border border-border shadow-sm">
+              <table className="w-full text-sm bg-white">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/60">
+                    <th className="text-left px-5 py-3.5 font-display font-bold text-foreground">Recurso</th>
+                    {["Gratuito", "Starter", "Profissional", "Premium"].map((h) => (
+                      <th key={h} className={`px-4 py-3.5 font-display font-bold text-center ${h === "Profissional" ? "text-accent" : "text-foreground"}`}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARISON.map((row, i) => (
+                    <tr key={i} className={`border-b border-border last:border-0 ${i % 2 === 0 ? "bg-white" : "bg-secondary/30"}`}>
+                      <td className="px-5 py-3 font-medium text-foreground">{row.feature}</td>
+                      {[row.trial, row.starter, row.pro, row.premium].map((val, j) => (
+                        <td key={j} className={`px-4 py-3 text-center ${val === "✓" ? "text-success font-bold text-base" : val === "✗" ? "text-muted-foreground/40 text-base" : "text-muted-foreground"} ${j === 2 ? "bg-accent/5" : ""}`}>
+                          {val}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ── DEPOIMENTO ── */}
+      <section className="py-20 bg-primary text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_bottom_left,_hsl(221,83%,50%)_0%,_transparent_60%)]" />
+        <div className="container mx-auto px-4 relative">
+          <ScrollReveal animation="fade-up">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl font-bold">O que dizem nossas autoescolas</h2>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal animation="scale">
+            <div className="max-w-2xl mx-auto bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl p-8 text-center shadow-xl">
+              <div className="flex justify-center mb-5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-lg md:text-xl leading-relaxed text-white/90 mb-6 italic">
+                "Desde que comecei a usar o sistema, reduzi em 80% o tempo gasto com papelada e meus alunos adoram os simulados online."
+              </blockquote>
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-display font-bold text-sm">
+                  JC
+                </div>
+                <div className="text-left">
+                  <p className="font-display font-bold text-sm">João Carlos</p>
+                  <p className="text-white/60 text-xs">Diretor — AutoEscola Central, SP</p>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="container mx-auto px-4">
+          <ScrollReveal animation="fade-up">
+            <div className="text-center space-y-3 mb-12">
+              <p className="text-accent font-semibold text-sm uppercase tracking-widest">Dúvidas</p>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Perguntas frequentes</h2>
+            </div>
+          </ScrollReveal>
+          <div className="max-w-2xl mx-auto">
+            {FAQS.map((f, i) => (
+              <ScrollReveal key={i} animation="fade-up" delay={i * 60}>
+                <FaqItem q={f.q} a={f.a} />
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA FINAL ── */}
+      <section className="py-20 section-bg border-t border-border">
         <div className="container mx-auto px-4">
           <ScrollReveal animation="scale">
-            <div className="max-w-3xl mx-auto text-center space-y-8">
-              <h2 className="text-3xl md:text-4xl font-bold">
+            <div className="max-w-2xl mx-auto text-center space-y-6">
+              <h2 className="font-display text-3xl md:text-4xl font-bold">
                 Pronto para transformar sua autoescola?
               </h2>
-              <p className="text-lg text-muted-foreground">
-                Junte-se a centenas de autoescolas que já modernizaram sua gestão com nossa plataforma.
+              <p className="text-muted-foreground text-lg">
+                Comece hoje, sem cartão de crédito. 14 dias com tudo liberado.
               </p>
               <Link to="/cadastro">
-                <Button size="lg" className="text-lg px-8 transition-all hover:scale-105 hover:shadow-xl group">
-                  Criar Conta Gratuita
-                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+                <Button size="lg" className="bg-accent hover:bg-accent/90 text-white text-base px-10 shadow-lg hover:shadow-xl transition-all hover:scale-105 group">
+                  Criar conta gratuita
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </div>
@@ -389,22 +618,22 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-16 bg-muted/30 border-t">
+      {/* ── CONTACT ── */}
+      <section id="contact" className="py-14 bg-white border-t border-border">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
               { icon: Phone, title: "Telefone", value: "(11) 99999-9999" },
-              { icon: Mail, title: "Email", value: "contato@cnhpro.com.br" },
-              { icon: MapPin, title: "Endereço", value: "São Paulo, SP - Brasil" }
-            ].map((contact, index) => (
-              <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
-                <div className="space-y-3 group cursor-pointer">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
-                    <contact.icon className="w-5 h-5 text-primary transition-colors group-hover:text-primary-foreground" />
+              { icon: Mail,  title: "Email",    value: "contato@cnhpro.com.br" },
+              { icon: MapPin,title: "Endereço", value: "São Paulo, SP — Brasil" },
+            ].map(({ icon: Icon, title, value }, i) => (
+              <ScrollReveal key={i} animation="fade-up" delay={i * 80}>
+                <div className="group space-y-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto group-hover:bg-primary transition-colors duration-300">
+                    <Icon className="w-5 h-5 text-primary group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h3 className="font-semibold">{contact.title}</h3>
-                  <p className="text-muted-foreground">{contact.value}</p>
+                  <p className="font-display font-semibold text-sm">{title}</p>
+                  <p className="text-muted-foreground text-sm">{value}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -412,22 +641,31 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t">
+      {/* ── FOOTER ── */}
+      <footer className="bg-foreground text-white py-10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Zap className="w-4 h-4 text-primary-foreground" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold">{BRAND}</span>
+              <span className="font-display font-bold text-lg">{BRAND}</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
+
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/60">
+              <a href="#pricing"   className="hover:text-white transition-colors">Planos</a>
+              <a href="#contact"   className="hover:text-white transition-colors">Suporte</a>
+              <a href="#"          className="hover:text-white transition-colors">Termos de Uso</a>
+              <a href="#"          className="hover:text-white transition-colors">Privacidade</a>
+            </nav>
+
+            <p className="text-sm text-white/40 text-center md:text-right">
               © 2025 {BRAND}. Todos os direitos reservados.
             </p>
           </div>
         </div>
       </footer>
+
     </div>
   );
 }
