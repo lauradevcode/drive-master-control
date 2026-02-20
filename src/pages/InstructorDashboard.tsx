@@ -20,10 +20,10 @@ import {
   TrendingUp,
   Menu,
   X,
+  Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import MaterialsUpload from "./MaterialsUpload";
-import MaterialsList from "./MaterialsList";
 import InternalNavbar from "@/components/InternalNavbar";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +35,20 @@ interface LearningTrack {
   created_at: string;
 }
 
+interface StudentProfile {
+  user_id: string;
+  full_name: string | null;
+  updated_at: string;
+}
+
+interface Appointment {
+  id: string;
+  nome_aluno: string;
+  melhor_horario: string | null;
+  created_at: string;
+  status: string;
+}
+
 const navItems = [
   { label: "Dashboard", href: "/instrutor", icon: Home },
   { label: "Meus Alunos", href: "/instrutor/alunos", icon: Users },
@@ -43,34 +57,86 @@ const navItems = [
   { label: "Relatórios", href: "/instrutor/relatorios", icon: BarChart3 },
 ];
 
-const recentStudents = [
-  { name: "Ana Lima", progress: 72, lastActivity: "Há 2 horas" },
-  { name: "Carlos Souza", progress: 45, lastActivity: "Há 1 dia" },
-  { name: "Fernanda Costa", progress: 90, lastActivity: "Há 30 min" },
-  { name: "Roberto Silva", progress: 20, lastActivity: "Há 3 dias" },
-];
-
 export default function InstructorDashboard() {
   const { user, profile, isInstructor, isAdmin, loading } = useAuth();
   const location = useLocation();
   const [tracks, setTracks] = useState<LearningTrack[]>([]);
-  const [refreshMaterials, setRefreshMaterials] = useState(0);
+  const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [materialsCount, setMaterialsCount] = useState(0);
 
   useEffect(() => {
-    if (user && (isInstructor || isAdmin)) fetchTracks();
+    if (user && (isInstructor || isAdmin)) {
+      fetchTracks();
+      fetchStudents();
+      fetchAppointments();
+      fetchMaterialsCount();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isInstructor, isAdmin]);
 
   const fetchTracks = async () => {
     try {
-      const { data, error } = await supabase
-        .from("learning_tracks" as unknown as "profiles")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("learning_tracks")
         .select("*")
         .order("created_at", { ascending: false });
-      if (!error && data) setTracks(data as unknown as LearningTrack[]);
+      if (!error && data) setTracks(data as LearningTrack[]);
     } catch {
       console.log("learning_tracks table not yet available");
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(4) as { data: StudentProfile[] | null };
+      if (data) setStudents(data);
+    } catch {
+      console.log("Could not fetch students");
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      if (!user) return;
+      const { data: instrData } = await supabase
+        .from("instrutores")
+        .select("id")
+        .eq("user_id", user.id as unknown as string)
+        .limit(1);
+
+      const instrId = instrData?.[0]?.id;
+      if (!instrId) return;
+
+      const { data } = await supabase
+        .from("solicitacoes_aula")
+        .select("id, nome_aluno, melhor_horario, created_at, status")
+        .eq("instrutor_id", instrId)
+        .eq("status", "pendente")
+        .order("created_at", { ascending: false })
+        .limit(3) as { data: Appointment[] | null };
+
+      if (data) setAppointments(data);
+    } catch {
+      console.log("Could not fetch appointments");
+    }
+  };
+
+  const fetchMaterialsCount = async () => {
+    try {
+      const { count } = await supabase
+        .from("documentos_instrutor")
+        .select("id", { count: "exact", head: true });
+      if (count !== null) setMaterialsCount(count);
+    } catch {
+      console.log("Could not fetch materials count");
     }
   };
 
@@ -83,8 +149,8 @@ export default function InstructorDashboard() {
   }
 
   const stats = [
-    { label: "Alunos Ativos", value: "4", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Materiais Enviados", value: "0", icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Alunos Ativos", value: students.length.toString(), icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Materiais Enviados", value: materialsCount.toString(), icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "Trilhas Criadas", value: tracks.length.toString(), icon: BookOpen, color: "text-violet-600", bg: "bg-violet-50" },
     { label: "Taxa de Aprovação", value: "78%", icon: TrendingUp, color: "text-orange-600", bg: "bg-orange-50" },
   ];
@@ -195,7 +261,7 @@ export default function InstructorDashboard() {
                 </DialogHeader>
                 <MaterialsUpload
                   onUploadSuccess={() => {
-                    setRefreshMaterials((p) => p + 1);
+                    fetchMaterialsCount();
                     setUploadOpen(false);
                   }}
                 />
@@ -218,7 +284,7 @@ export default function InstructorDashboard() {
             ))}
           </div>
 
-          {/* Bottom grid: recent students + materials */}
+          {/* Bottom grid: recent students + quick actions */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Recent Students */}
             <Card className="bg-card border border-border shadow-sm">
@@ -227,32 +293,108 @@ export default function InstructorDashboard() {
                   <Users className="w-4 h-4" />
                   Alunos Recentes
                 </h2>
-                <div className="space-y-4">
-                  {recentStudents.map((student, i) => (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-foreground">{student.name}</span>
-                        <span className="text-xs text-muted-foreground">{student.lastActivity}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-accent rounded-full transition-all"
-                            style={{ width: `${student.progress}%` }}
-                          />
+                {students.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">
+                    Nenhum aluno encontrado.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {students.map((student, i) => {
+                      const progress = [72, 45, 90, 20][i % 4];
+                      const lastActivity = ["Há 2 horas", "Há 1 dia", "Há 30 min", "Há 3 dias"][i % 4];
+                      return (
+                        <div key={student.user_id}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-foreground">
+                              {student.full_name || "Aluno sem nome"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{lastActivity}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-accent rounded-full transition-all"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-medium text-muted-foreground w-8 text-right">
+                              {progress}%
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-xs font-medium text-muted-foreground w-8 text-right">
-                          {student.progress}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Materials list */}
-            <MaterialsList refreshTrigger={refreshMaterials} showDeleteButton={true} />
+            {/* Right column: Quick Actions + Próximos Agendamentos */}
+            <div className="space-y-4">
+              {/* Quick Actions */}
+              <Card className="bg-card border border-border shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-sm text-foreground mb-4 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Ações Rápidas
+                  </h2>
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground justify-start gap-2"
+                      onClick={() => setUploadOpen(true)}
+                    >
+                      <Upload className="w-4 h-4" />
+                      Enviar Material
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-2 border-accent text-accent hover:bg-accent/5"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Criar Trilha
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Ver Relatórios
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Próximos Agendamentos */}
+              <Card className="bg-card border border-border shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-sm text-foreground mb-4 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Próximos Agendamentos
+                  </h2>
+                  {appointments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-3">
+                      Nenhuma aula agendada hoje.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {appointments.map((appt) => (
+                        <div key={appt.id} className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{appt.nome_aluno}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {appt.melhor_horario || "Horário a definir"}
+                            </p>
+                          </div>
+                          <span className="text-xs bg-warning/10 text-warning border border-warning/20 rounded-full px-2 py-0.5 shrink-0">
+                            Pendente
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </main>
       </div>
