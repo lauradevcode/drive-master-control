@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,10 +77,37 @@ function formatBRL(value: number) {
   });
 }
 
-export default function Financeiro() {
+function FinanceiroContent() {
+  const { loading, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [monthFilter, setMonthFilter] = useState("fev-2026");
   const [planFilter, setPlanFilter] = useState("all");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary flex flex-col">
+        <InternalNavbar />
+        <div className="flex flex-1">
+          <main className="flex-1 px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
+            <Skeleton className="h-7 w-48 mb-2" />
+            <Skeleton className="h-4 w-56 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i} className="bg-card border border-border">
+                  <CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className="bg-card border border-border mb-6">
+              <CardContent className="p-5"><Skeleton className="h-[200px] w-full" /></CardContent>
+            </Card>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
 
   const filtered =
     planFilter === "all"
@@ -294,5 +325,13 @@ export default function Financeiro() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function Financeiro() {
+  return (
+    <ErrorBoundary>
+      <FinanceiroContent />
+    </ErrorBoundary>
   );
 }
