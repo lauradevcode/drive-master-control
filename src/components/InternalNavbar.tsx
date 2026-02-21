@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +30,12 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+      navigate("/login");
+    } catch {
+      toast({ title: "Erro ao sair. Tente novamente.", variant: "destructive" });
+    }
   };
 
   const initials = (profile?.full_name || user?.email || "U")
