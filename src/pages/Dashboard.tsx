@@ -382,59 +382,49 @@ export default function Dashboard() {
 
         {/* Action cards */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto">
+          {/* Card 1 — Simulados */}
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
+            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <BookOpen className="w-7 h-7 text-accent" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">Simulados</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Pratique com questões do DETRAN
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Pratique com questões do DETRAN</p>
+                <p className="text-xs text-muted-foreground mt-1">30 questões por simulado</p>
               </div>
-              <Button
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                onClick={() => navigate("/simulado")}
-              >
+              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => navigate("/simulado")}>
                 Iniciar Simulado
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto">
+          {/* Card 2 — Instrutores */}
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
+            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <Users className="w-7 h-7 text-accent" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">Instrutores</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Encontre e agende com instrutores
-                </p>
-                <p className="text-xs text-emerald-600 font-medium mt-1">
-                  1 instrutor disponível
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Encontre e agende com instrutores</p>
+                <p className="text-xs text-emerald-600 font-medium mt-1">1 instrutor disponível</p>
               </div>
-              <Button
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                onClick={() => navigate("/instrutores")}
-              >
+              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => navigate("/instrutores")}>
                 Ver Instrutores
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto">
+          {/* Card 3 — Meu Progresso */}
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
+            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <Trophy className="w-7 h-7 text-accent" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">Meu Progresso</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Acompanhe sua evolução
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Acompanhe sua evolução</p>
               </div>
               <div className="w-full">
                 <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
