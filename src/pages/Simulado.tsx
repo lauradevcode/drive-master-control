@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import {
   Clock,
   CheckCircle,
@@ -39,7 +48,7 @@ function getCategoryStyle(cat: string) {
 }
 
 export default function Simulado() {
-  const { user, profile } = useAuth();
+  const { isAdmin, isInstructor, loading } = useAuth();
   const navigate = useNavigate();
 
   const [quizState, setQuizState] = useState<QuizState>("intro");
@@ -49,6 +58,19 @@ export default function Simulado() {
   const [confirmedAnswers, setConfirmedAnswers] = useState<boolean[]>([]);
   const [timeLeft, setTimeLeft] = useState(60 * 60);
   const [showResult, setShowResult] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // Block non-students
+  useEffect(() => {
+    if (loading) return;
+    if (isAdmin) {
+      toast({ title: "Simulados são exclusivos para alunos.", variant: "destructive" });
+      navigate("/admin", { replace: true });
+    } else if (isInstructor) {
+      toast({ title: "Simulados são exclusivos para alunos.", variant: "destructive" });
+      navigate("/instrutor", { replace: true });
+    }
+  }, [loading, isAdmin, isInstructor, navigate]);
 
   // Timer
   useEffect(() => {
@@ -240,8 +262,19 @@ export default function Simulado() {
       <div className="min-h-screen bg-secondary flex flex-col">
         {/* Sticky header */}
         <header className="sticky top-0 z-50 bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] px-4 md:px-6 py-3">
-          <div className="max-w-3xl mx-auto flex items-center gap-4">
-            {/* Left: logo + title */}
+          <div className="max-w-3xl mx-auto flex items-center gap-3 md:gap-4">
+            {/* Exit button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 text-muted-foreground h-8 px-2.5 text-xs"
+              onClick={() => setShowExitDialog(true)}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+              Sair
+            </Button>
+
+            {/* Logo + title */}
             <div className="flex items-center gap-2 shrink-0">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-primary-foreground" />
@@ -427,6 +460,26 @@ export default function Simulado() {
             </div>
           )}
         </div>
+
+        {/* Exit confirmation dialog */}
+        <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Sair do simulado?</DialogTitle>
+              <DialogDescription>
+                Seu progresso será perdido. Tem certeza que deseja sair?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setShowExitDialog(false)}>
+                Continuar simulado
+              </Button>
+              <Button variant="destructive" onClick={() => navigate("/dashboard")}>
+                Sim, sair
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
