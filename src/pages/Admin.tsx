@@ -1,8 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   Tooltip,
   TooltipContent,
@@ -105,21 +108,74 @@ function formatBRL(value: number) {
   });
 }
 
-export default function Admin() {
-  const { loading } = useAuth();
+function AdminSkeleton() {
+  return (
+    <div className="min-h-screen bg-secondary flex flex-col">
+      <InternalNavbar />
+      <div className="flex flex-1">
+        <main className="flex-1 px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
+          {/* Header skeleton */}
+          <div className="mb-6 md:mb-8">
+            <Skeleton className="h-7 w-40 mb-2" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          {/* 4 metric cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="bg-card border border-border">
+                <CardContent className="p-3 md:p-5">
+                  <Skeleton className="w-8 h-8 rounded-lg mb-3" />
+                  <Skeleton className="h-7 w-24 mb-2" />
+                  <Skeleton className="h-3 w-32 mb-1" />
+                  <Skeleton className="h-3 w-20" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {/* Chart + clients */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+            <Card className="lg:col-span-3 bg-card border border-border">
+              <CardContent className="p-5">
+                <Skeleton className="h-4 w-40 mb-4" />
+                <Skeleton className="h-[200px] w-full rounded-lg" />
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-2 bg-card border border-border">
+              <CardContent className="p-5">
+                <Skeleton className="h-4 w-32 mb-4" />
+                <Skeleton className="h-16 w-full rounded-lg mb-3" />
+                <Skeleton className="h-16 w-full rounded-lg" />
+              </CardContent>
+            </Card>
+          </div>
+          {/* 3 growth cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="bg-card border border-border">
+                <CardContent className="p-5">
+                  <Skeleton className="h-3 w-28 mb-3" />
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-3 w-36" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function AdminContent() {
+  const { loading, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
-      </div>
-    );
-  }
+  if (loading) return <AdminSkeleton />;
+  if (!user) return <Navigate to="/login" replace />;
 
   const mrr = 249;
   const arr = mrr * 12;
-  const activeClients = clients.filter((c) => c.status === "Ativo").length;
+  const activeClients = (clients || []).filter((c) => c.status === "Ativo").length;
 
   const stats = [
     {
@@ -221,7 +277,6 @@ export default function Admin() {
 
           {/* Line 2 — Chart + Client list */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-            {/* Revenue chart */}
             <Card className="lg:col-span-3 bg-card border border-border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -232,7 +287,7 @@ export default function Admin() {
               <CardContent className="pt-0">
                 <div className="h-[180px] md:h-[220px] lg:h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <AreaChart data={revenueData || []} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0.2} />
@@ -241,11 +296,7 @@ export default function Admin() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 20%, 88%)" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(215, 16%, 47%)" />
-                      <YAxis
-                        tick={{ fontSize: 12 }}
-                        stroke="hsl(215, 16%, 47%)"
-                        tickFormatter={(v) => `R$${v}`}
-                      />
+                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(215, 16%, 47%)" tickFormatter={(v) => `R$${v}`} />
                       <RechartsTooltip
                         formatter={(value: number) => [formatBRL(value), "Receita"]}
                         contentStyle={{
@@ -282,7 +333,6 @@ export default function Admin() {
               </CardContent>
             </Card>
 
-            {/* Client list */}
             <Card className="lg:col-span-2 bg-card border border-border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -291,28 +341,22 @@ export default function Admin() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                {clients.length === 0 ? (
+                {(clients || []).length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Nenhum cliente ainda.
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {clients.map((client) => (
+                    {(clients || []).map((client) => (
                       <div
                         key={client.id}
                         className="flex items-start justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {client.name}
-                          </p>
+                          <p className="text-sm font-medium text-foreground truncate">{client.name}</p>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <Badge className={`text-[10px] border-0 ${planColors[client.plan] || ""}`}>
-                              {client.plan}
-                            </Badge>
-                            <Badge className={`text-[10px] border-0 ${statusColors[client.status] || ""}`}>
-                              {client.status}
-                            </Badge>
+                            <Badge className={`text-[10px] border-0 ${planColors[client.plan] || ""}`}>{client.plan}</Badge>
+                            <Badge className={`text-[10px] border-0 ${statusColors[client.status] || ""}`}>{client.status}</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1.5">
                             {formatBRL(client.value)}/mês · Vence {client.nextBilling}
@@ -325,15 +369,9 @@ export default function Admin() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem className="cursor-pointer text-sm">
-                              Ver detalhes
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-sm">
-                              Alterar plano
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">
-                              Cancelar assinatura
-                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer text-sm">Ver detalhes</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer text-sm">Alterar plano</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">Cancelar assinatura</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -362,5 +400,13 @@ export default function Admin() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function Admin() {
+  return (
+    <ErrorBoundary>
+      <AdminContent />
+    </ErrorBoundary>
   );
 }
