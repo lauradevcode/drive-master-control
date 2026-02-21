@@ -261,36 +261,36 @@ export default function Simulado() {
     return (
       <div className="min-h-screen bg-secondary flex flex-col">
         {/* Sticky header */}
-        <header className="sticky top-0 z-50 bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] px-4 md:px-6 py-3">
-          <div className="max-w-3xl mx-auto flex items-center gap-3 md:gap-4">
+        <header className="sticky top-0 z-50 bg-card shadow-[0_2px_8px_rgba(0,0,0,0.08)] px-3 md:px-6 py-2.5 md:py-3">
+          <div className="max-w-3xl mx-auto flex items-center gap-2 md:gap-4">
             {/* Exit button */}
             <Button
               variant="outline"
               size="sm"
-              className="shrink-0 text-muted-foreground h-8 px-2.5 text-xs"
+              className="shrink-0 text-muted-foreground h-8 px-2 md:px-2.5 text-xs"
               onClick={() => setShowExitDialog(true)}
             >
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-              Sair
+              <ArrowLeft className="w-3.5 h-3.5 mr-0.5 md:mr-1" />
+              <span className="hidden sm:inline">Sair</span>
             </Button>
 
-            {/* Logo + title */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Logo + title — hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="text-sm font-bold text-foreground hidden sm:block">
+              <span className="text-sm font-bold text-foreground hidden md:block">
                 Simulado DETRAN
               </span>
             </div>
 
             {/* Center: progress */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Questão {currentQuestion + 1} de {questions.length}</span>
+              <div className="flex items-center justify-between text-[10px] md:text-xs text-muted-foreground mb-1">
+                <span>{currentQuestion + 1}/{questions.length}</span>
                 <span>{Math.round(progressPercent)}%</span>
               </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-1.5 md:h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-accent rounded-full transition-all duration-300"
                   style={{ width: `${progressPercent}%` }}
@@ -300,22 +300,22 @@ export default function Simulado() {
 
             {/* Right: timer */}
             <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted shrink-0 font-mono text-sm font-bold",
+              "flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-muted shrink-0 font-mono text-xs md:text-sm font-bold",
               timerColor,
               timerBlink && "animate-pulse"
             )}>
-              <Clock className="w-4 h-4" />
+              <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
               {formatTime(timeLeft)}
             </div>
           </div>
         </header>
 
         {/* Question body */}
-        <main className="flex-1 px-4 md:px-6 pt-6 md:pt-10 pb-28">
+        <main className="flex-1 px-3 md:px-6 pt-4 md:pt-10 pb-28">
           <div className="max-w-[720px] mx-auto">
             {/* Category badge */}
             <span className={cn(
-              "inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold mb-4",
+              "inline-block px-3 py-1 md:px-3.5 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold mb-3 md:mb-4",
               getCategoryStyle(q.category).bg,
               getCategoryStyle(q.category).text,
             )}>
@@ -323,10 +323,10 @@ export default function Simulado() {
             </span>
 
             {/* Question number + text */}
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 md:mb-2">
               Questão {currentQuestion + 1} de {questions.length}
             </p>
-            <h2 className="text-lg md:text-[22px] font-semibold leading-relaxed text-primary mb-6">
+            <h2 className="text-base md:text-lg lg:text-[22px] font-semibold leading-relaxed text-primary mb-4 md:mb-6">
               {q.question}
             </h2>
 
@@ -342,7 +342,7 @@ export default function Simulado() {
                     onClick={() => selectAnswer(index)}
                     disabled={isConfirmed}
                     className={cn(
-                      "w-full flex items-center gap-3 md:gap-4 p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-150",
+                      "w-full flex items-center gap-2.5 md:gap-4 p-3.5 md:p-5 rounded-xl border-2 text-left transition-all duration-150",
                       // Default
                       !isConfirmed && !isSelected && "border-border bg-card hover:border-accent hover:bg-accent/5",
                       // Selected but not confirmed
@@ -357,7 +357,7 @@ export default function Simulado() {
                   >
                     {/* Letter circle */}
                     <span className={cn(
-                      "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-150",
+                      "w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shrink-0 transition-all duration-150",
                       !isConfirmed && !isSelected && "bg-muted text-muted-foreground",
                       isSelected && !isConfirmed && "bg-accent text-accent-foreground",
                       isConfirmed && isCorrect && "bg-emerald-500 text-white",
@@ -367,7 +367,7 @@ export default function Simulado() {
                     </span>
 
                     {/* Text */}
-                    <span className="flex-1 text-sm md:text-base text-foreground">
+                    <span className="flex-1 text-[13px] md:text-sm lg:text-base text-foreground">
                       {option}
                     </span>
 
@@ -405,19 +405,20 @@ export default function Simulado() {
         </main>
 
         {/* Sticky bottom nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-card shadow-[0_-2px_8px_rgba(0,0,0,0.08)] px-4 md:px-6 py-3 z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-card shadow-[0_-2px_8px_rgba(0,0,0,0.08)] px-3 md:px-6 py-2.5 md:py-3 z-40">
           <div className="max-w-[720px] mx-auto flex items-center justify-between">
             <Button
               variant="outline"
               onClick={previousQuestion}
               disabled={currentQuestion === 0}
-              className="h-11 md:h-10"
+              className="h-11 md:h-10 px-3 md:px-4 text-xs md:text-sm"
             >
-              <ArrowLeft className="mr-1.5 w-4 h-4" />
+              <ArrowLeft className="mr-1 w-3.5 h-3.5 md:w-4 md:h-4" />
               <span className="hidden sm:inline">Anterior</span>
+              <span className="sm:hidden">Ant.</span>
             </Button>
 
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs md:text-sm text-muted-foreground">
               {currentQuestion + 1} / {questions.length}
             </span>
 
@@ -425,22 +426,23 @@ export default function Simulado() {
               <Button
                 onClick={confirmAnswer}
                 disabled={selectedAnswers[currentQuestion] === null}
-                className="h-11 md:h-10 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-11 md:h-10 px-3 md:px-4 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 Confirmar
               </Button>
             ) : currentQuestion < questions.length - 1 ? (
               <Button
                 onClick={nextQuestion}
-                className="h-11 md:h-10 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-11 md:h-10 px-3 md:px-4 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground"
               >
-                Próxima
-                <ArrowRight className="ml-1.5 w-4 h-4" />
+                <span className="hidden sm:inline">Próxima</span>
+                <span className="sm:hidden">Próx.</span>
+                <ArrowRight className="ml-1 w-3.5 h-3.5 md:w-4 md:h-4" />
               </Button>
             ) : (
               <Button
                 onClick={finishQuiz}
-                className="h-11 md:h-10 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-11 md:h-10 px-3 md:px-4 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 Ver Resultado
                 <Trophy className="ml-1.5 w-4 h-4" />
@@ -510,10 +512,10 @@ export default function Simulado() {
               <XCircle className="w-10 h-10 text-white" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-white mb-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
             {passed ? "Aprovado! 🎉" : "Não foi dessa vez"}
           </h1>
-          <p className="text-white/80 text-sm">
+          <p className="text-white/80 text-xs md:text-sm">
             Você acertou {score} de {questions.length} questões ({percent}%)
           </p>
         </div>

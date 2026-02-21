@@ -210,13 +210,13 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
         {/* Page title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">
             {firstName ? `Olá, ${firstName} 👋` : "Olá! 👋"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
             Acompanhe seu progresso e continue seus estudos
           </p>
         </div>
@@ -286,13 +286,13 @@ export default function Dashboard() {
         )}
 
         {/* Metric cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           {metricCards.map((stat, index) => (
             <Card
               key={index}
               className={`bg-gradient-to-br ${stat.gradient} border-0 shadow-sm relative`}
             >
-              <CardContent className="p-5">
+              <CardContent className="p-3 md:p-5">
                 {/* Tooltip icon */}
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -306,9 +306,9 @@ export default function Dashboard() {
                 </Tooltip>
 
                 <div
-                  className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}
+                  className={`w-8 h-8 md:w-9 md:h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-2 md:mb-3`}
                 >
-                  <stat.icon className="w-4 h-4 text-white" />
+                  <stat.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                 </div>
 
                 {/* Value or empty CTA */}
@@ -320,7 +320,7 @@ export default function Dashboard() {
                     Faça um simulado!
                   </Link>
                 ) : (
-                  <p className={`text-3xl font-bold ${stat.textColor}`}>
+                  <p className={`text-xl md:text-3xl font-bold ${stat.textColor}`}>
                     {stat.value ?? "—"}
                   </p>
                 )}
@@ -352,7 +352,7 @@ export default function Dashboard() {
         </div>
 
         {/* Próxima Aula */}
-        <Card className="bg-card border border-border shadow-sm mb-8">
+        <Card className="bg-card border border-border shadow-sm mb-6 md:mb-8">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -381,10 +381,10 @@ export default function Dashboard() {
         </Card>
 
         {/* Action cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
           {/* Card 1 — Simulados */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <BookOpen className="w-7 h-7 text-accent" />
               </div>
@@ -400,8 +400,8 @@ export default function Dashboard() {
           </Card>
 
           {/* Card 2 — Instrutores */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <Users className="w-7 h-7 text-accent" />
               </div>
@@ -417,8 +417,8 @@ export default function Dashboard() {
           </Card>
 
           {/* Card 3 — Meu Progresso */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <Trophy className="w-7 h-7 text-accent" />
               </div>

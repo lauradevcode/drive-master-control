@@ -93,23 +93,24 @@ export default function Financeiro() {
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8">
+        <main className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
           {/* Header */}
-          <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
+          <div className="flex items-center justify-between gap-3 mb-6 md:mb-8 flex-wrap">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setSidebarOpen(true)}>
                 <Menu className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Receita e Assinaturas</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">Receita e Assinaturas</h1>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
                   Controle financeiro detalhado
                 </p>
               </div>
             </div>
             <Button variant="outline" size="sm" className="gap-2">
               <Download className="w-4 h-4" />
-              Exportar CSV
+              <span className="hidden sm:inline">Exportar CSV</span>
+              <span className="sm:hidden">CSV</span>
             </Button>
           </div>
 
@@ -175,13 +176,14 @@ export default function Financeiro() {
             </Card>
           </div>
 
-          {/* Subscriptions table */}
-          <Card className="bg-card border border-border shadow-sm mb-8">
+          {/* Subscriptions — table on md+, cards on mobile */}
+          <Card className="bg-card border border-border shadow-sm mb-6 md:mb-8">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Assinaturas</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="rounded-xl border border-border overflow-hidden">
+              {/* Desktop table */}
+              <div className="hidden md:block rounded-xl border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
@@ -222,6 +224,28 @@ export default function Financeiro() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {filtered.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-8">Nenhuma assinatura encontrada.</p>
+                ) : (
+                  filtered.map((sub) => (
+                    <div key={sub.id} className="border border-border rounded-xl p-4 space-y-2">
+                      <p className="font-semibold text-sm text-foreground">{sub.name}</p>
+                      <div className="flex gap-2">
+                        <Badge className={`text-[10px] border-0 ${planColors[sub.plan] || ""}`}>{sub.plan}</Badge>
+                        <Badge className={`text-[10px] border-0 ${statusColors[sub.status] || ""}`}>{sub.status}</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div><span className="text-muted-foreground">Valor:</span> <span className="font-medium">{formatBRL(sub.value)}</span></div>
+                        <div><span className="text-muted-foreground">Início:</span> <span className="font-medium">{sub.start}</span></div>
+                        <div className="col-span-2"><span className="text-muted-foreground">Próx. Vencimento:</span> <span className="font-medium">{sub.nextBilling}</span></div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -233,7 +257,7 @@ export default function Financeiro() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[260px]">
+              <div className="h-[200px] md:h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
