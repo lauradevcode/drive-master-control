@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import InstrutoresMarketplace from "./pages/instrutores/Index";
 import PerfilInstrutor from "./pages/instrutores/Perfil";
 import CadastroInstrutor from "./pages/instrutores/Cadastro";
+import InstrutoresAluno from "./pages/InstrutoresAluno";
 
 const queryClient = new QueryClient();
 
@@ -35,8 +36,9 @@ const App = () => (
             <Route path="/instrutor" element={<InstructorDashboard />} />
             <Route path="/simulado" element={<Simulado />} />
             <Route path="/admin" element={<Admin />} />
-            {/* Marketplace de Instrutores */}
-            <Route path="/instrutores" element={<InstrutoresMarketplace />} />
+            {/* Instrutores */}
+            <Route path="/instrutores" element={<InstrutoresAluno />} />
+            <Route path="/instrutores/marketplace" element={<InstrutoresMarketplace />} />
             <Route path="/instrutores/:id" element={<PerfilInstrutor />} />
             <Route path="/instrutores/cadastro" element={<CadastroInstrutor />} />
             <Route path="*" element={<NotFound />} />

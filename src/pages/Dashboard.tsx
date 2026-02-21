@@ -1,14 +1,24 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   BookOpen,
   Calendar,
   Trophy,
   Clock,
   Target,
+  HelpCircle,
+  X,
+  CheckCircle2,
+  ArrowRight,
+  Users,
 } from "lucide-react";
 import MaterialsList from "./MaterialsList";
 import InternalNavbar from "@/components/InternalNavbar";
@@ -27,11 +37,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     aulasFeitas: 0,
-    aulasTotais: 0,
+    aulasTotais: 30,
     simuladosFeitos: 0,
     melhorNota: null,
     horasEstudo: 0,
   });
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -46,7 +57,6 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      // Fetch simulados feitos (solicitacoes as proxy for lessons)
       const { count: solicitacoesCount } = await supabase
         .from("solicitacoes_aula")
         .select("id", { count: "exact", head: true });
@@ -71,11 +81,54 @@ export default function Dashboard() {
     );
   }
 
+  const firstName = profile?.full_name?.split(" ")[0] || "Aluno";
+  const isNewUser = stats.aulasFeitas === 0 && stats.simuladosFeitos === 0;
+
+  const onboardingSteps = [
+    {
+      num: 1,
+      label: "Faça seu primeiro simulado",
+      done: stats.simuladosFeitos > 0,
+      href: "/simulado",
+    },
+    {
+      num: 2,
+      label: "Agende sua primeira aula",
+      done: stats.aulasFeitas > 0,
+      href: "/instrutores",
+    },
+    {
+      num: 3,
+      label: "Conheça seus instrutores",
+      done: false, // no tracking for this yet
+      href: "/instrutores",
+    },
+  ];
+  const allStepsDone = onboardingSteps.every((s) => s.done);
+
+  const tooltips: Record<string, string> = {
+    "Aulas Concluídas":
+      "Total de aulas práticas marcadas como concluídas pelo seu instrutor",
+    "Simulados Feitos":
+      "Quantidade de simulados completos que você realizou",
+    "Melhor Nota":
+      "Sua maior pontuação em um simulado. A nota mínima para aprovação no DETRAN é 70%",
+    "Horas de Estudo": "Soma das horas das suas aulas concluídas",
+  };
+
+  const emptyMessages: Record<string, { text: string; href?: string }> = {
+    "Aulas Concluídas": { text: "Agende sua primeira aula →", href: "/instrutores" },
+    "Simulados Feitos": { text: "Comece agora →", href: "/simulado" },
+    "Melhor Nota": { text: "Faça um simulado!", href: "/simulado" },
+    "Horas de Estudo": { text: "Sua jornada começa aqui" },
+  };
+
   const metricCards = [
     {
       icon: BookOpen,
       label: "Aulas Concluídas",
       value: `${stats.aulasFeitas}/${stats.aulasTotais}`,
+      isEmpty: stats.aulasFeitas === 0,
       gradient: "from-blue-50 to-blue-100",
       iconBg: "bg-blue-500",
       textColor: "text-blue-900",
@@ -84,6 +137,7 @@ export default function Dashboard() {
       icon: Target,
       label: "Simulados Feitos",
       value: stats.simuladosFeitos.toString(),
+      isEmpty: stats.simuladosFeitos === 0,
       gradient: "from-emerald-50 to-emerald-100",
       iconBg: "bg-emerald-500",
       textColor: "text-emerald-900",
@@ -91,7 +145,8 @@ export default function Dashboard() {
     {
       icon: Trophy,
       label: "Melhor Nota",
-      value: stats.melhorNota !== null ? `${stats.melhorNota}%` : "—",
+      value: stats.melhorNota !== null ? `${stats.melhorNota}%` : null,
+      isEmpty: stats.melhorNota === null,
       gradient: "from-violet-50 to-violet-100",
       iconBg: "bg-violet-500",
       textColor: "text-violet-900",
@@ -100,6 +155,7 @@ export default function Dashboard() {
       icon: Clock,
       label: "Horas de Estudo",
       value: `${stats.horasEstudo}h`,
+      isEmpty: stats.horasEstudo === 0,
       gradient: "from-orange-50 to-orange-100",
       iconBg: "bg-orange-500",
       textColor: "text-orange-900",
@@ -114,6 +170,7 @@ export default function Dashboard() {
         navLinks={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Simulados", href: "/simulado" },
+          { label: "Instrutores", href: "/instrutores" },
         ]}
       />
 
@@ -152,23 +209,138 @@ export default function Dashboard() {
         {/* Page title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Olá, {profile?.full_name?.split(" ")[0] || "Aluno"} 👋
+            Olá, {firstName} 👋
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Acompanhe seu progresso e continue seus estudos
           </p>
         </div>
 
+        {/* Onboarding banner */}
+        {isNewUser && showOnboarding && !allStepsDone && (
+          <div className="relative rounded-xl bg-gradient-to-r from-[#1A3C6E] to-[#2563EB] text-white p-6 md:p-8 mb-8 overflow-hidden">
+            <button
+              onClick={() => setShowOnboarding(false)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-1">
+              Bem-vindo ao CNH Pro! Vamos começar? 🎉
+            </h2>
+            <p className="text-sm text-white/80 mb-6">
+              Complete esses 3 passos para aproveitar tudo que o sistema oferece
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {onboardingSteps.map((step) => {
+                const isActive = !step.done;
+                return (
+                  <div
+                    key={step.num}
+                    className={`flex items-start gap-3 rounded-lg p-4 ${
+                      step.done
+                        ? "bg-white/10"
+                        : "bg-white/15 border border-white/20"
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold ${
+                        step.done
+                          ? "bg-emerald-400 text-emerald-900"
+                          : "bg-white/20 text-white"
+                      }`}
+                    >
+                      {step.done ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : (
+                        step.num
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-sm font-medium ${
+                          step.done ? "line-through text-white/60" : ""
+                        }`}
+                      >
+                        {step.label}
+                      </p>
+                      {isActive && (
+                        <button
+                          onClick={() => navigate(step.href)}
+                          className="text-xs font-semibold mt-2 inline-flex items-center gap-1 text-white/90 hover:text-white"
+                        >
+                          Fazer agora <ArrowRight className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Metric cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {metricCards.map((stat, index) => (
-            <Card key={index} className={`bg-gradient-to-br ${stat.gradient} border-0 shadow-sm`}>
+            <Card
+              key={index}
+              className={`bg-gradient-to-br ${stat.gradient} border-0 shadow-sm relative`}
+            >
               <CardContent className="p-5">
-                <div className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}>
+                {/* Tooltip icon */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="absolute top-3 right-3 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    {tooltips[stat.label]}
+                  </TooltipContent>
+                </Tooltip>
+
+                <div
+                  className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}
+                >
                   <stat.icon className="w-4 h-4 text-white" />
                 </div>
-                <p className={`text-3xl font-bold ${stat.textColor}`}>{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+
+                {/* Value or empty CTA */}
+                {stat.isEmpty && stat.label === "Melhor Nota" ? (
+                  <Link
+                    to="/simulado"
+                    className="text-lg font-bold text-accent hover:underline"
+                  >
+                    Faça um simulado!
+                  </Link>
+                ) : (
+                  <p className={`text-3xl font-bold ${stat.textColor}`}>
+                    {stat.value ?? "—"}
+                  </p>
+                )}
+
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stat.label}
+                </p>
+
+                {/* Motivational micro-message */}
+                {stat.isEmpty && emptyMessages[stat.label] && stat.label !== "Melhor Nota" && (
+                  <>
+                    {emptyMessages[stat.label].href ? (
+                      <Link
+                        to={emptyMessages[stat.label].href!}
+                        className="text-[11px] text-accent hover:underline mt-1 inline-block"
+                      >
+                        {emptyMessages[stat.label].text}
+                      </Link>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {emptyMessages[stat.label].text}
+                      </p>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -183,13 +355,20 @@ export default function Dashboard() {
                   <Calendar className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm">Próxima Aula</h3>
+                  <h3 className="font-semibold text-foreground text-sm">
+                    Próxima Aula
+                  </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Nenhuma aula agendada. Agende sua primeira aula prática!
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => navigate("/instrutores")}
+              >
                 Agendar Agora
               </Button>
             </div>
@@ -221,16 +400,19 @@ export default function Dashboard() {
           <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6 text-center space-y-4">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto">
-                <Calendar className="w-7 h-7 text-accent" />
+                <Users className="w-7 h-7 text-accent" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Agendar Aula</h3>
+                <h3 className="font-semibold text-foreground">Instrutores</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Marque suas aulas práticas
+                  Encontre e agende com instrutores
                 </p>
               </div>
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                Ver Horários
+              <Button
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => navigate("/instrutores")}
+              >
+                Ver Instrutores
               </Button>
             </CardContent>
           </Card>
