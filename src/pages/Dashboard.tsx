@@ -19,8 +19,10 @@ import {
   CheckCircle2,
   ArrowRight,
   Users,
+  FileText,
+  PlayCircle,
 } from "lucide-react";
-import MaterialsList from "./MaterialsList";
+
 import InternalNavbar from "@/components/InternalNavbar";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -43,6 +45,9 @@ export default function Dashboard() {
     horasEstudo: 0,
   });
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [visitedInstrutores, setVisitedInstrutores] = useState(() => {
+    return localStorage.getItem("cnhpro_visited_instrutores") === "true";
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -81,7 +86,7 @@ export default function Dashboard() {
     );
   }
 
-  const firstName = profile?.full_name?.split(" ")[0] || "Aluno";
+  const firstName = profile?.full_name?.split(" ")[0] || null;
   const isNewUser = stats.aulasFeitas === 0 && stats.simuladosFeitos === 0;
 
   const onboardingSteps = [
@@ -100,7 +105,7 @@ export default function Dashboard() {
     {
       num: 3,
       label: "Conheça seus instrutores",
-      done: false, // no tracking for this yet
+      done: visitedInstrutores,
       href: "/instrutores",
     },
   ];
@@ -209,7 +214,7 @@ export default function Dashboard() {
         {/* Page title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
-            Olá, {firstName} 👋
+            {firstName ? `Olá, ${firstName} 👋` : "Olá! 👋"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Acompanhe seu progresso e continue seus estudos
@@ -407,6 +412,9 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground mt-1">
                   Encontre e agende com instrutores
                 </p>
+                <p className="text-xs text-emerald-600 font-medium mt-1">
+                  1 instrutor disponível
+                </p>
               </div>
               <Button
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
@@ -428,6 +436,14 @@ export default function Dashboard() {
                   Acompanhe sua evolução
                 </p>
               </div>
+              <div className="w-full">
+                <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                  <span>0% concluído</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: "0%" }} />
+                </div>
+              </div>
               <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                 Ver Relatório
               </Button>
@@ -435,8 +451,51 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Materials */}
-        <MaterialsList showDeleteButton={false} />
+        {/* Materials do Curso */}
+        <Card className="bg-card border border-border shadow-sm">
+          <CardContent className="p-6">
+            <h3 className="font-semibold text-foreground text-base mb-1">📚 Materiais do Curso</h3>
+            <p className="text-xs text-muted-foreground mb-5">
+              Conteúdos enviados pelo seu instrutor para te ajudar a estudar: PDFs, vídeos e apostilas
+            </p>
+
+            <div className="space-y-3">
+              {/* Mock Card 1 - PDF */}
+              <div className="flex items-center gap-4 p-4 border border-border rounded-xl">
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                  <FileText className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm">Apostila de Direção Defensiva</h4>
+                  <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · PDF · 2,4 MB</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 2 dias</p>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0 text-accent border-accent/30 hover:bg-accent/10">
+                  Baixar PDF
+                </Button>
+              </div>
+
+              {/* Mock Card 2 - Vídeo */}
+              <div className="flex items-center gap-4 p-4 border border-border rounded-xl">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                  <PlayCircle className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm">Videoaula: Sinalização de Trânsito</h4>
+                  <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · Vídeo · 12 min</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 5 dias</p>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0 text-accent border-accent/30 hover:bg-accent/10">
+                  Assistir
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground mt-4">
+              💡 Novos materiais aparecem aqui assim que seu instrutor os enviar.
+            </p>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

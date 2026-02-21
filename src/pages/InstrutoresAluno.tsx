@@ -42,6 +42,11 @@ export default function InstrutoresAluno() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Mark visited for onboarding step
+  useEffect(() => {
+    localStorage.setItem("cnhpro_visited_instrutores", "true");
+  }, []);
+
   const [instrutores, setInstrutores] = useState<Instrutor[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
