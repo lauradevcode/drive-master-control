@@ -210,7 +210,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
         {/* Page title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">
@@ -353,10 +353,10 @@ export default function Dashboard() {
 
         {/* Próxima Aula */}
         <Card className="bg-card border border-border shadow-sm mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center shrink-0">
                   <Calendar className="w-5 h-5 text-accent" />
                 </div>
                 <div>
@@ -371,7 +371,7 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="sm"
-                className="shrink-0"
+                className="shrink-0 w-full sm:w-auto"
                 onClick={() => navigate("/instrutores")}
               >
                 Agendar Agora
@@ -381,7 +381,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Action cards */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {/* Card 1 — Simulados */}
           <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
             <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
@@ -443,7 +443,7 @@ export default function Dashboard() {
 
         {/* Materials do Curso */}
         <Card className="bg-card border border-border shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <h3 className="font-semibold text-foreground text-base mb-1">📚 Materiais do Curso</h3>
             <p className="text-xs text-muted-foreground mb-5">
               Conteúdos enviados pelo seu instrutor para te ajudar a estudar: PDFs, vídeos e apostilas
@@ -451,31 +451,35 @@ export default function Dashboard() {
 
             <div className="space-y-3">
               {/* Mock Card 1 - PDF */}
-              <div className="flex items-center gap-4 p-4 border border-border rounded-xl">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5 text-red-600" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 border border-border rounded-xl">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm">Apostila de Direção Defensiva</h4>
+                    <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · PDF · 2,4 MB</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 2 dias</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">Apostila de Direção Defensiva</h4>
-                  <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · PDF · 2,4 MB</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 2 dias</p>
-                </div>
-                <Button variant="outline" size="sm" className="shrink-0 text-accent border-accent/30 hover:bg-accent/10">
+                <Button variant="outline" size="sm" className="shrink-0 w-full sm:w-auto text-accent border-accent/30 hover:bg-accent/10">
                   Baixar PDF
                 </Button>
               </div>
 
               {/* Mock Card 2 - Vídeo */}
-              <div className="flex items-center gap-4 p-4 border border-border rounded-xl">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                  <PlayCircle className="w-5 h-5 text-blue-600" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 border border-border rounded-xl">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <PlayCircle className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm">Videoaula: Sinalização de Trânsito</h4>
+                    <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · Vídeo · 12 min</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 5 dias</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">Videoaula: Sinalização de Trânsito</h4>
-                  <p className="text-xs text-muted-foreground">Enviado por: Instrutor João · Vídeo · 12 min</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Enviado há 5 dias</p>
-                </div>
-                <Button variant="outline" size="sm" className="shrink-0 text-accent border-accent/30 hover:bg-accent/10">
+                <Button variant="outline" size="sm" className="shrink-0 w-full sm:w-auto text-accent border-accent/30 hover:bg-accent/10">
                   Assistir
                 </Button>
               </div>
