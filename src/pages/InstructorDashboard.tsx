@@ -227,13 +227,13 @@ export default function InstructorDashboard() {
         ]}
       />
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
         {/* Page title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">
             {firstName ? `Olá, ${firstName} 👋` : "Painel do Instrutor 👋"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
             Gerencie seus alunos e conteúdos
           </p>
         </div>
@@ -304,13 +304,13 @@ export default function InstructorDashboard() {
         )}
 
         {/* Metric cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           {stats.map((stat, index) => (
             <Card
               key={index}
               className={`bg-gradient-to-br ${stat.gradient} border-0 shadow-sm relative`}
             >
-              <CardContent className="p-5">
+              <CardContent className="p-3 md:p-5">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button className="absolute top-3 right-3 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
@@ -326,15 +326,15 @@ export default function InstructorDashboard() {
                 </Tooltip>
 
                 <div
-                  className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}
+                  className={`w-8 h-8 md:w-9 md:h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-2 md:mb-3`}
                 >
-                  <stat.icon className="w-4 h-4 text-white" />
+                  <stat.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                 </div>
 
-                <p className={`text-3xl font-bold ${stat.textColor}`}>
+                <p className={`text-xl md:text-3xl font-bold ${stat.textColor}`}>
                   {stat.value}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                   {stat.label}
                 </p>
                 {stat.sublabel && (
@@ -381,10 +381,10 @@ export default function InstructorDashboard() {
         </Card>
 
         {/* Action cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
           {/* Card 1 — Enviar Material */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <Upload className="w-7 h-7 text-accent" />
               </div>
@@ -416,8 +416,8 @@ export default function InstructorDashboard() {
           </Card>
 
           {/* Card 2 — Criar Trilha */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <BookOpen className="w-7 h-7 text-accent" />
               </div>
@@ -446,8 +446,8 @@ export default function InstructorDashboard() {
           </Card>
 
           {/* Card 3 — Ver Relatórios */}
-          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow h-[200px]">
-            <CardContent className="p-6 h-full flex flex-col items-center justify-between text-center">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow md:h-[200px]">
+            <CardContent className="p-4 md:p-6 h-full flex flex-col items-center justify-between text-center gap-3 md:gap-0">
               <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
                 <BarChart3 className="w-7 h-7 text-accent" />
               </div>

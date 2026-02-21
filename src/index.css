@@ -110,13 +110,27 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased text-sm md:text-base;
     font-family: 'Inter', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     @apply font-bold tracking-tight;
+  }
+
+  /* Global responsive: min touch targets */
+  button, [role="button"], a[href] {
+    min-height: 44px;
+  }
+
+  /* Except inline/icon buttons */
+  button.inline-size, [data-inline] {
+    min-height: unset;
+  }
+
+  input, select, textarea {
+    min-height: 48px;
   }
 }
 

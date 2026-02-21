@@ -188,39 +188,39 @@ export default function Admin() {
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8">
+        <main className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-6 md:mb-8">
             <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
                 Visão geral do seu negócio
               </p>
             </div>
           </div>
 
           {/* Line 1 — Financial cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
             {stats.map((stat, i) => (
               <Card key={i} className="bg-card border border-border shadow-sm relative">
-                <CardContent className="p-5">
+                <CardContent className="p-3 md:p-5">
                   <TooltipIcon text={stat.tooltip} />
-                  <div className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}>
-                    <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+                  <div className={`w-8 h-8 md:w-9 md:h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-2 md:mb-3`}>
+                    <stat.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${stat.iconColor}`} />
                   </div>
-                  <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">{stat.sub}</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-1 leading-tight">{stat.label}</p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5 hidden sm:block">{stat.sub}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {/* Line 2 — Chart + Client list */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
             {/* Revenue chart */}
             <Card className="lg:col-span-3 bg-card border border-border shadow-sm">
               <CardHeader className="pb-2">
@@ -230,7 +230,7 @@ export default function Admin() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="h-[260px]">
+                <div className="h-[180px] md:h-[220px] lg:h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <defs>
@@ -345,7 +345,7 @@ export default function Admin() {
           </div>
 
           {/* Line 3 — Growth metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             {growthCards.map((card, i) => (
               <Card key={i} className="bg-card border border-border shadow-sm">
                 <CardContent className="p-5">
