@@ -138,9 +138,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error("Erro ao sair:", e);
+    }
     setProfile(null);
     setRoles([]);
+    setUser(null);
+    setSession(null);
+    // Clear all app-related localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("cnhpro_") || key.startsWith("sb-")) {
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
   };
 
   return (
