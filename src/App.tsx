@@ -12,6 +12,7 @@ import InstructorDashboard from "./pages/InstructorDashboard";
 import PendingAccount from "./pages/PendingAccount";
 import Simulado from "./pages/Simulado";
 import Admin from "./pages/Admin";
+import AdminFinanceiro from "./pages/admin/Financeiro";
 import NotFound from "./pages/NotFound";
 import InstrutoresMarketplace from "./pages/instrutores/Index";
 import PerfilInstrutor from "./pages/instrutores/Perfil";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/instrutor" element={<InstructorDashboard />} />
             <Route path="/simulado" element={<Simulado />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/financeiro" element={<AdminFinanceiro />} />
             {/* Instrutores */}
             <Route path="/instrutores" element={<InstrutoresAluno />} />
             <Route path="/instrutores/marketplace" element={<InstrutoresMarketplace />} />

@@ -1,9 +1,13 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,381 +15,350 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Home,
+  DollarSign,
   Users,
-  GraduationCap,
-  CreditCard,
-  BarChart3,
-  Settings,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  RefreshCw,
-  MoreHorizontal,
-  Shield,
+  TrendingUp,
+  CalendarDays,
+  HelpCircle,
   Menu,
-  X,
-  CreditCard as PlanIcon,
+  MoreHorizontal,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-import InstrutoresTab from "@/components/admin/InstrutoresTab";
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+  ReferenceLine,
+} from "recharts";
 import InternalNavbar from "@/components/InternalNavbar";
-import { cn } from "@/lib/utils";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
-interface UserProfile {
-  id: string;
-  user_id: string;
-  full_name: string | null;
-  phone: string | null;
-  status: "active" | "inactive";
-  created_at: string;
-  email?: string;
-  role?: string;
-}
-
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: Home },
-  { label: "Usuários", href: "/admin/usuarios", icon: Users },
-  { label: "Instrutores", href: "/admin/instrutores", icon: GraduationCap },
-  { label: "Planos e Assinaturas", href: "/admin/planos", icon: CreditCard },
-  { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
-  { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
+// Mock data
+const revenueData = [
+  { month: "Set", value: 0 },
+  { month: "Out", value: 0 },
+  { month: "Nov", value: 0 },
+  { month: "Dez", value: 249 },
+  { month: "Jan", value: 249 },
+  { month: "Fev", value: 249 },
 ];
 
+const clients = [
+  {
+    id: "1",
+    name: "Auto Escola São Paulo",
+    plan: "Starter",
+    value: 249,
+    status: "Ativo",
+    nextBilling: "15/03/2026",
+  },
+];
+
+const planColors: Record<string, string> = {
+  Starter: "bg-emerald-100 text-emerald-700",
+  Profissional: "bg-blue-100 text-blue-700",
+  Premium: "bg-violet-100 text-violet-700",
+};
+
+const statusColors: Record<string, string> = {
+  Ativo: "bg-emerald-100 text-emerald-700",
+  Trial: "bg-amber-100 text-amber-700",
+  Atrasado: "bg-red-100 text-red-700",
+};
+
+const tooltips: Record<string, string> = {
+  MRR: "Soma de todas as assinaturas ativas no mês atual",
+  Clientes: "Autoescolas com assinatura ativa e em dia",
+  ARR: "MRR × 12. Projeção se nenhum cliente cancelar",
+  Vencimento: "Data da próxima renovação de assinatura",
+  Churn: "% de clientes que cancelaram nos últimos 30 dias. Abaixo de 5% é saudável.",
+  LTV: "Quanto cada cliente gera em média durante todo o tempo que fica ativo.",
+  CAC: "Quanto você gasta em média para conquistar 1 novo cliente.",
+};
+
+function TooltipIcon({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <HelpCircle className="w-3.5 h-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        className="max-w-[220px] text-xs bg-[hsl(215,45%,12%)] text-white border-0"
+      >
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function formatBRL(value: number) {
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+  });
+}
+
 export default function Admin() {
-  const { isAdmin, loading } = useAuth();
-  const location = useLocation();
-
-  const { toast } = useToast();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [updatingUser, setUpdatingUser] = useState<string | null>(null);
-  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const { loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const fetchUsers = async () => {
-    setLoadingUsers(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar os usuários." });
-    } else {
-      setUsers(data as unknown as UserProfile[]);
-    }
-    setLoadingUsers(false);
-  };
-
-  useEffect(() => {
-    if (isAdmin) fetchUsers();
-  }, [isAdmin]);
-
-  const toggleUserStatus = async (userId: string, currentStatus: "active" | "inactive") => {
-    setUpdatingUser(userId);
-    const newStatus = currentStatus === "active" ? "inactive" : "active";
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ status: newStatus } as any)
-      .eq("user_id", userId as any);
-
-    if (error) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível atualizar o status." });
-    } else {
-      toast({ title: "Sucesso", description: `Usuário ${newStatus === "active" ? "ativado" : "desativado"} com sucesso.` });
-      setUsers(users.map((u) => (u.user_id === userId ? { ...u, status: newStatus } : u)));
-    }
-    setUpdatingUser(null);
-  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
       </div>
     );
   }
 
-  const activeUsers = users.filter((u) => u.status === "active").length;
+  const mrr = 249;
+  const arr = mrr * 12;
+  const activeClients = clients.filter((c) => c.status === "Ativo").length;
 
-  const filteredUsers = roleFilter === "all" ? users : users.filter((u) => u.role === roleFilter);
+  const stats = [
+    {
+      label: "Receita Mensal Recorrente",
+      value: formatBRL(mrr),
+      sub: "+R$ 0 vs mês anterior",
+      icon: DollarSign,
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+      tooltip: tooltips.MRR,
+    },
+    {
+      label: "Autoescolas Pagantes",
+      value: activeClients.toString(),
+      sub: "0 em trial · 0 churned",
+      icon: Users,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      tooltip: tooltips.Clientes,
+    },
+    {
+      label: "Receita Anual Projetada",
+      value: formatBRL(arr),
+      sub: "Se mantiver clientes atuais",
+      icon: TrendingUp,
+      iconBg: "bg-violet-100",
+      iconColor: "text-violet-600",
+      tooltip: tooltips.ARR,
+    },
+    {
+      label: "Próxima Cobrança",
+      value: "15/03",
+      sub: "Starter · R$ 249,00",
+      icon: CalendarDays,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      tooltip: tooltips.Vencimento,
+    },
+  ];
 
-  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <aside className={cn(
-      "flex flex-col bg-card border-r border-border h-full",
-      mobile ? "w-full" : "w-56 shrink-0"
-    )}>
-      {mobile && (
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <span className="font-semibold text-sm">Menu</span>
-          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-      <nav className="flex-1 p-3 space-y-1 pt-4">
-        {navItems.map((item) => {
-          const active = location.pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                active
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <item.icon className="w-4 h-4 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center shrink-0">
-            <Shield className="w-3 h-3 text-primary-foreground" />
-          </div>
-          <div>
-            <p className="text-xs font-medium">Admin</p>
-            <p className="text-xs text-muted-foreground">Acesso total</p>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
+  const growthCards = [
+    {
+      label: "Taxa de Cancelamento",
+      value: "0%",
+      sub: "Nenhum cancelamento ainda 🎉",
+      tooltip: tooltips.Churn,
+    },
+    {
+      label: "Valor Vitalício do Cliente",
+      value: formatBRL(arr),
+      sub: "Baseado em 12 meses médios",
+      tooltip: tooltips.LTV,
+    },
+    {
+      label: "Custo de Aquisição",
+      value: "—",
+      sub: "Configure seus gastos de marketing",
+      tooltip: tooltips.CAC,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-secondary flex flex-col">
       <InternalNavbar />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Desktop sidebar */}
-        <div className="hidden md:flex">
-          <Sidebar />
-        </div>
+        <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex">
-            <div className="w-64 h-full shadow-xl">
-              <Sidebar mobile />
-            </div>
-            <div className="flex-1 bg-black/40" onClick={() => setSidebarOpen(false)} />
-          </div>
-        )}
-
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto px-6 py-8">
-          {/* Page header */}
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8">
+          {/* Header */}
           <div className="flex items-center gap-3 mb-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
+            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
+              <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Gerencie usuários, instrutores e configurações do sistema
+                Visão geral do seu negócio
               </p>
             </div>
           </div>
 
-          {/* Summary cards */}
+          {/* Line 1 — Financial cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: "Alunos Ativos", value: activeUsers.toString(), icon: Users, bg: "bg-blue-50", color: "text-blue-600" },
-              { label: "Total de Instrutores", value: "—", icon: GraduationCap, bg: "bg-emerald-50", color: "text-emerald-600" },
-              { label: "Plano Atual", value: "Profissional", icon: PlanIcon, bg: "bg-violet-50", color: "text-violet-600" },
-              { label: "Simulados / Mês", value: "—", icon: BarChart3, bg: "bg-orange-50", color: "text-orange-600" },
-            ].map((stat, i) => (
-              <Card key={i} className="bg-card border border-border shadow-sm">
+            {stats.map((stat, i) => (
+              <Card key={i} className="bg-card border border-border shadow-sm relative">
                 <CardContent className="p-5">
-                  <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center mb-3`}>
-                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                  <TooltipIcon text={stat.tooltip} />
+                  <div className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center mb-3`}>
+                    <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+                  <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">{stat.sub}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Tabs: Usuários | Instrutores */}
-          <Tabs defaultValue="usuarios">
-            <TabsList className="mb-6">
-              <TabsTrigger value="usuarios" className="gap-2">
-                <Users className="w-4 h-4" />
-                Usuários
-              </TabsTrigger>
-              <TabsTrigger value="instrutores" className="gap-2">
-                <GraduationCap className="w-4 h-4" />
-                Instrutores
-              </TabsTrigger>
-            </TabsList>
+          {/* Line 2 — Chart + Client list */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
+            {/* Revenue chart */}
+            <Card className="lg:col-span-3 bg-card border border-border shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  Receita Mensal (MRR)
+                  <TooltipIcon text="Evolução da receita recorrente nos últimos 6 meses" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 20%, 88%)" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(215, 16%, 47%)" />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        stroke="hsl(215, 16%, 47%)"
+                        tickFormatter={(v) => `R$${v}`}
+                      />
+                      <RechartsTooltip
+                        formatter={(value: number) => [formatBRL(value), "Receita"]}
+                        contentStyle={{
+                          background: "hsl(215, 45%, 12%)",
+                          border: "none",
+                          borderRadius: 8,
+                          color: "#fff",
+                          fontSize: 13,
+                        }}
+                      />
+                      <ReferenceLine
+                        y={2490}
+                        stroke="hsl(0, 84%, 60%)"
+                        strokeDasharray="6 4"
+                        label={{
+                          value: "Meta: R$2.490/mês",
+                          position: "insideTopRight",
+                          fill: "hsl(0, 84%, 60%)",
+                          fontSize: 11,
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="hsl(221, 83%, 53%)"
+                        strokeWidth={2}
+                        fill="url(#colorRevenue)"
+                        dot={{ r: 4, fill: "hsl(221, 83%, 53%)" }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* ── Users Tab ── */}
-            <TabsContent value="usuarios">
-              <Card className="bg-card border border-border shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between py-4">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Usuários Cadastrados
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {/* Role filter */}
-                    <Select value={roleFilter} onValueChange={setRoleFilter}>
-                      <SelectTrigger className="h-8 w-32 text-xs">
-                        <SelectValue placeholder="Filtrar role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="user">Aluno</SelectItem>
-                        <SelectItem value="instrutor">Instrutor</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loadingUsers} className="h-8 text-xs">
-                      <RefreshCw className={`w-3 h-3 mr-1 ${loadingUsers ? "animate-spin" : ""}`} />
-                      Atualizar
-                    </Button>
+            {/* Client list */}
+            <Card className="lg:col-span-2 bg-card border border-border shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  Clientes Ativos
+                  <TooltipIcon text="Lista de autoescolas com assinatura ativa" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {clients.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum cliente ainda.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {clients.map((client) => (
+                      <div
+                        key={client.id}
+                        className="flex items-start justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {client.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <Badge className={`text-[10px] border-0 ${planColors[client.plan] || ""}`}>
+                              {client.plan}
+                            </Badge>
+                            <Badge className={`text-[10px] border-0 ${statusColors[client.status] || ""}`}>
+                              {client.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            {formatBRL(client.value)}/mês · Vence {client.nextBilling}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="w-8 h-8 p-0 shrink-0">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem className="cursor-pointer text-sm">
+                              Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer text-sm">
+                              Alterar plano
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">
+                              Cancelar assinatura
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))}
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {loadingUsers ? (
-                    <div className="flex justify-center py-10">
-                      <Loader2 className="w-8 h-8 animate-spin text-accent" />
-                    </div>
-                  ) : filteredUsers.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground text-sm">
-                      Nenhum usuário encontrado.
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-border overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-muted/50">
-                            <TableHead className="text-xs font-semibold">Nome</TableHead>
-                            <TableHead className="text-xs font-semibold">Telefone</TableHead>
-                            <TableHead className="text-xs font-semibold">Role</TableHead>
-                            <TableHead className="text-xs font-semibold">Status</TableHead>
-                            <TableHead className="text-xs font-semibold">Cadastro</TableHead>
-                            <TableHead className="text-xs font-semibold">Último Acesso</TableHead>
-                            <TableHead className="w-10"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredUsers.map((userProfile) => (
-                            <TableRow key={userProfile.id} className="hover:bg-muted/30">
-                              <TableCell className="font-medium text-sm">
-                                {userProfile.full_name || "Sem nome"}
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {userProfile.phone || "—"}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-muted text-muted-foreground border-0"
-                                >
-                                  {userProfile.role === "admin"
-                                    ? "Admin"
-                                    : userProfile.role === "instrutor"
-                                    ? "Instrutor"
-                                    : "Aluno"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  className={cn(
-                                    "text-xs border-0 gap-1",
-                                    userProfile.status === "active"
-                                      ? "bg-success/10 text-success"
-                                      : "bg-muted text-muted-foreground"
-                                  )}
-                                >
-                                  {userProfile.status === "active" ? (
-                                    <><CheckCircle className="w-3 h-3" /> Ativo</>
-                                  ) : (
-                                    <><XCircle className="w-3 h-3" /> Inativo</>
-                                  )}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {new Date(userProfile.created_at).toLocaleDateString("pt-BR")}
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">—</TableCell>
-                              <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="w-8 h-8 p-0" disabled={updatingUser === userProfile.user_id}>
-                                      {updatingUser === userProfile.user_id ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        <MoreHorizontal className="w-4 h-4" />
-                                      )}
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-44">
-                                    <DropdownMenuItem className="cursor-pointer text-sm">
-                                      Ver perfil
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="cursor-pointer text-sm">
-                                      Alterar role
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="cursor-pointer text-sm text-destructive focus:text-destructive"
-                                      onClick={() => toggleUserStatus(userProfile.user_id, userProfile.status)}
-                                    >
-                                      {userProfile.status === "active" ? "Desativar usuário" : "Ativar usuário"}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Line 3 — Growth metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {growthCards.map((card, i) => (
+              <Card key={i} className="bg-card border border-border shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <p className="text-xs text-muted-foreground font-medium">{card.label}</p>
+                    <TooltipIcon text={card.tooltip} />
+                  </div>
+                  <p className="text-2xl md:text-3xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-[11px] text-muted-foreground/70 mt-1">{card.sub}</p>
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            {/* ── Instrutores Tab ── */}
-            <TabsContent value="instrutores">
-              <InstrutoresTab />
-            </TabsContent>
-          </Tabs>
+            ))}
+          </div>
         </main>
       </div>
     </div>
