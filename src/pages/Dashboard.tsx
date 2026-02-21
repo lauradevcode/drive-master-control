@@ -61,17 +61,37 @@ export default function Dashboard() {
   }, [user]);
 
   const fetchStats = async () => {
+    if (!user) return;
     try {
-      const { count: solicitacoesCount } = await supabase
-        .from("solicitacoes_aula")
-        .select("id", { count: "exact", head: true });
+      // Matricula data
+      const { data: matriculaData } = await (supabase as any)
+        .from("matriculas")
+        .select("aulas_concluidas, total_aulas, horas_estudo")
+        .eq("aluno_id", user.id)
+        .limit(1);
+
+      const matricula = matriculaData?.[0];
+
+      // Simulados count
+      const { count: simuladosCount } = await (supabase as any)
+        .from("simulados")
+        .select("id", { count: "exact", head: true })
+        .eq("aluno_id", user.id);
+
+      // Best score
+      const { data: bestData } = await (supabase as any)
+        .from("simulados")
+        .select("nota")
+        .eq("aluno_id", user.id)
+        .order("nota", { ascending: false })
+        .limit(1);
 
       setStats({
-        aulasFeitas: 0,
-        aulasTotais: 30,
-        simuladosFeitos: solicitacoesCount ?? 0,
-        melhorNota: null,
-        horasEstudo: 0,
+        aulasFeitas: matricula?.aulas_concluidas ?? 0,
+        aulasTotais: matricula?.total_aulas ?? 30,
+        simuladosFeitos: simuladosCount ?? 0,
+        melhorNota: bestData?.[0]?.nota ?? null,
+        horasEstudo: matricula?.horas_estudo ?? 0,
       });
     } catch {
       console.log("Could not fetch dashboard stats");

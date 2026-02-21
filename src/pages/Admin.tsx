@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,27 +38,18 @@ import {
 } from "recharts";
 import InternalNavbar from "@/components/InternalNavbar";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data
-const revenueData = [
-  { month: "Set", value: 0 },
-  { month: "Out", value: 0 },
-  { month: "Nov", value: 0 },
-  { month: "Dez", value: 249 },
-  { month: "Jan", value: 249 },
-  { month: "Fev", value: 249 },
-];
+interface ClientData {
+  id: string;
+  name: string;
+  plan: string;
+  value: number;
+  status: string;
+  nextBilling: string;
+}
 
-const clients = [
-  {
-    id: "1",
-    name: "Auto Escola São Paulo",
-    plan: "Starter",
-    value: 249,
-    status: "Ativo",
-    nextBilling: "15/03/2026",
-  },
-];
+// Will be fetched from Supabase
 
 const planColors: Record<string, string> = {
   Starter: "bg-emerald-100 text-emerald-700",
@@ -169,13 +160,60 @@ function AdminSkeleton() {
 function AdminContent() {
   const { loading, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [clients, setClients] = useState<{ id: string; name: string; plan: string; value: number; status: string; nextBilling: string }[]>([]);
+  const [revenueData, setRevenueData] = useState<{ month: string; value: number }[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  if (loading) return <AdminSkeleton />;
+  useEffect(() => {
+    if (!user) return;
+    const fetchData = async () => {
+      setDataLoading(true);
+      try {
+        const { data: subs } = await (supabase as any)
+          .from("assinaturas")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        const mapped = (subs || []).map((s: any) => ({
+          id: s.id,
+          name: s.autoescola_nome,
+          plan: s.plano ? s.plano.charAt(0).toUpperCase() + s.plano.slice(1) : "Starter",
+          value: Number(s.valor) || 0,
+          status: s.status === "ativo" ? "Ativo" : s.status === "trial" ? "Trial" : s.status === "atrasado" ? "Atrasado" : "Cancelado",
+          nextBilling: s.proximo_vencimento ? new Date(s.proximo_vencimento).toLocaleDateString("pt-BR") : "—",
+        }));
+        setClients(mapped);
+
+        // Build last 6 months revenue chart
+        const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const now = new Date();
+        const chartData: { month: string; value: number }[] = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthLabel = months[d.getMonth()];
+          const activeInMonth = (subs || []).filter((s: any) => {
+            const created = new Date(s.created_at);
+            return created <= d && (s.status === "ativo" || s.status === "trial");
+          });
+          const total = activeInMonth.reduce((sum: number, s: any) => sum + (Number(s.valor) || 0), 0);
+          chartData.push({ month: monthLabel, value: total });
+        }
+        setRevenueData(chartData);
+      } catch {
+        console.log("Failed to fetch admin data");
+      } finally {
+        setDataLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  if (loading || dataLoading) return <AdminSkeleton />;
   if (!user) return <Navigate to="/login" replace />;
 
-  const mrr = 249;
+  const mrr = clients.filter((c) => c.status === "Ativo").reduce((sum, c) => sum + c.value, 0);
   const arr = mrr * 12;
-  const activeClients = (clients || []).filter((c) => c.status === "Ativo").length;
+  const activeClients = clients.filter((c) => c.status === "Ativo").length;
 
   const stats = [
     {
@@ -207,8 +245,8 @@ function AdminContent() {
     },
     {
       label: "Próxima Cobrança",
-      value: "15/03",
-      sub: "Starter · R$ 249,00",
+      value: clients.length > 0 ? clients[0].nextBilling : "—",
+      sub: clients.length > 0 ? `${clients[0].plan} · ${formatBRL(clients[0].value)}` : "Nenhum cliente",
       icon: CalendarDays,
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
