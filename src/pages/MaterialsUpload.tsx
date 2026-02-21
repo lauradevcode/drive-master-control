@@ -22,25 +22,20 @@ export default function MaterialsUpload({ onUploadSuccess }: UploadMaterialProps
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Preencha o título do material",
-      });
+      toast({ variant: "destructive", title: "Erro", description: "Preencha o título do material" });
       return;
     }
 
-    // Ler arquivo direto do input
     const file = fileInputRef.current?.files?.[0];
-    
     if (!file) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Selecione um arquivo",
-      });
+      toast({ variant: "destructive", title: "Erro", description: "Selecione um arquivo" });
+      return;
+    }
+
+    if (!user) {
+      toast({ variant: "destructive", title: "Erro", description: "Você precisa estar logado" });
       return;
     }
 
@@ -49,94 +44,36 @@ export default function MaterialsUpload({ onUploadSuccess }: UploadMaterialProps
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `materials/${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
-      console.log("Arquivo:", file.name);
-      console.log("Tipo:", file.type);
-      console.log("Tamanho:", file.size);
-      console.log("Iniciando upload para:", filePath);
-
-      // Upload file to storage
-      const { error: uploadError, data: uploadData } = await supabase.storage
-        .from("materials")
+      // Upload to storage bucket 'materiais'
+      const { error: uploadError } = await supabase.storage
+        .from("materiais")
         .upload(filePath, file);
 
-      if (uploadError) {
-        console.error("Storage upload error:", uploadError);
-        
-        // Se o bucket não existe, usar localStorage
-        console.log("Usando fallback localStorage (bucket não existe)");
-        const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
-        localMaterials.push({
-          id: `local_${Date.now()}`,
-          title,
-          description,
-          file_url: URL.createObjectURL(file),
-          file_path: filePath,
-          file_type: file.type,
-          uploaded_by: user?.id || "demo",
-          created_at: new Date().toISOString(),
-        });
-        localStorage.setItem("materials", JSON.stringify(localMaterials));
-        
-        toast({
-          title: "Sucesso!",
-          description: "Material armazenado localmente",
-        });
-        
-        setTitle("");
-        setDescription("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        onUploadSuccess?.();
-        setUploading(false);
-        return;
-      }
-
-      console.log("Arquivo enviado com sucesso:", uploadData);
+      if (uploadError) throw uploadError;
 
       // Get public URL
-      const { data } = supabase.storage
-        .from("materials")
-        .getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from("materiais").getPublicUrl(filePath);
 
-      console.log("URL pública:", data.publicUrl);
+      // Determine tipo
+      const tipo = file.type.includes("pdf") ? "pdf" : file.type.includes("video") ? "video" : "outro";
 
-      // Try to create material record
-      const { error: dbError } = await supabase
-        .from("materials" as unknown as "profiles")
-        .insert([
-          {
-            title,
-            description,
-            file_url: data.publicUrl,
-            file_path: filePath,
-            file_type: file.type,
-            uploaded_by: user?.id || "demo",
-          },
-        ] as any);
-
-      if (dbError) {
-        console.warn("Database error (esperado se tabela não existe):", dbError.message);
-        // Se a tabela não existe, salva em localStorage como fallback
-        const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
-        localMaterials.push({
-          id: `db_${Date.now()}`,
-          title,
-          description,
-          file_url: data.publicUrl,
+      // Insert into materiais table
+      const { error: dbError } = await (supabase as any)
+        .from("materiais")
+        .insert({
+          instrutor_id: user.id,
+          titulo: title,
+          descricao: description || null,
+          tipo,
+          file_url: urlData.publicUrl,
           file_path: filePath,
-          file_type: file.type,
-          uploaded_by: user?.id || "demo",
-          created_at: new Date().toISOString(),
         });
-        localStorage.setItem("materials", JSON.stringify(localMaterials));
-      }
 
-      toast({
-        title: "Sucesso!",
-        description: "Material enviado com sucesso.",
-      });
+      if (dbError) throw dbError;
 
+      toast({ title: "Sucesso!", description: "Material enviado com sucesso." });
       setTitle("");
       setDescription("");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -160,69 +97,24 @@ export default function MaterialsUpload({ onUploadSuccess }: UploadMaterialProps
           <Upload className="w-5 h-5" />
           Upload de Material
         </CardTitle>
-        <CardDescription>
-          Envie PDFs, vídeos ou outros arquivos para seus alunos
-        </CardDescription>
+        <CardDescription>Envie PDFs, vídeos ou outros arquivos para seus alunos</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleUpload} className="space-y-4">
           <div>
             <Label htmlFor="title">Título do Material</Label>
-            <Input
-              id="title"
-              placeholder="Ex: Aula sobre Direção Defensiva"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={uploading}
-            />
+            <Input id="title" placeholder="Ex: Aula sobre Direção Defensiva" value={title} onChange={(e) => setTitle(e.target.value)} disabled={uploading} />
           </div>
-
           <div>
             <Label htmlFor="description">Descrição</Label>
-            <Input
-              id="description"
-              placeholder="Descrição breve do material"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={uploading}
-            />
+            <Input id="description" placeholder="Descrição breve do material" value={description} onChange={(e) => setDescription(e.target.value)} disabled={uploading} />
           </div>
-
           <div>
             <Label htmlFor="file">Selecionar Arquivo</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                ref={fileInputRef}
-                id="file"
-                type="file"
-                disabled={uploading}
-                accept=".pdf,.mp4,.mov,.avi,.jpg,.png,.doc,.docx"
-              />
-              {fileInputRef.current?.files?.[0] && (
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
-                  {fileInputRef.current.files[0].name}
-                </span>
-              )}
-            </div>
+            <Input ref={fileInputRef} id="file" type="file" disabled={uploading} accept=".pdf,.mp4,.mov,.avi,.jpg,.png,.doc,.docx" />
           </div>
-
-          <Button 
-            type="submit" 
-            disabled={uploading || !title}
-            className="w-full"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4 mr-2" />
-                Enviar Material
-              </>
-            )}
+          <Button type="submit" disabled={uploading || !title} className="w-full">
+            {uploading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</>) : (<><Upload className="w-4 h-4 mr-2" />Enviar Material</>)}
           </Button>
         </form>
       </CardContent>

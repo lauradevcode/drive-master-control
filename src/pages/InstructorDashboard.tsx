@@ -132,10 +132,12 @@ export default function InstructorDashboard() {
   };
 
   const fetchMaterialsCount = async () => {
+    if (!user) return;
     try {
-      const { count } = await supabase
-        .from("documentos_instrutor")
-        .select("id", { count: "exact", head: true });
+      const { count } = await (supabase as any)
+        .from("materiais")
+        .select("id", { count: "exact", head: true })
+        .eq("instrutor_id", user.id);
       if (count !== null) setMaterialsCount(count);
     } catch {
       console.log("Could not fetch materials count");

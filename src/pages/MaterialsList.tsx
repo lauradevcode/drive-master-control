@@ -8,12 +8,12 @@ import { useNavigate } from "react-router-dom";
 
 interface Material {
   id: string;
-  title: string;
-  description: string | null;
-  file_url: string;
-  file_path?: string;
-  file_type: string;
-  uploaded_by: string;
+  titulo: string;
+  descricao: string | null;
+  file_url: string | null;
+  file_path: string | null;
+  tipo: string | null;
+  instrutor_id: string;
   created_at: string;
 }
 
@@ -32,24 +32,15 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("materials" as unknown as "profiles")
+      const { data, error } = await (supabase as any)
+        .from("materiais")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        if (error.message.includes("relation") || error.message.includes("materials")) {
-          const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
-          setMaterials(localMaterials as Material[]);
-        } else {
-          throw error;
-        }
-      } else {
-        setMaterials(data as unknown as Material[]);
-      }
+      if (error) throw error;
+      setMaterials((data || []) as Material[]);
     } catch {
-      const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
-      setMaterials(localMaterials as Material[]);
+      setMaterials([]);
     } finally {
       setLoading(false);
     }
@@ -60,26 +51,20 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
   }, [refreshTrigger]);
 
   const handleDelete = async (material: Material) => {
-    if (!window.confirm(`Tem certeza que deseja deletar "${material.title}"?`)) return;
+    if (!window.confirm(`Tem certeza que deseja deletar "${material.titulo}"?`)) return;
 
     setDeleting(material.id);
     try {
       if (material.file_path) {
-        await supabase.storage.from("materials").remove([material.file_path]);
+        await supabase.storage.from("materiais").remove([material.file_path]);
       }
 
-      const { error } = await supabase
-        .from("materials" as unknown as "profiles")
+      const { error } = await (supabase as any)
+        .from("materiais")
         .delete()
-        .eq("id", material.id as any);
+        .eq("id", material.id);
 
-      if (error && !error.message.includes("relation")) throw error;
-
-      if (error) {
-        const localMaterials = JSON.parse(localStorage.getItem("materials") || "[]");
-        const filtered = localMaterials.filter((m: Material) => m.id !== material.id);
-        localStorage.setItem("materials", JSON.stringify(filtered));
-      }
+      if (error) throw error;
 
       toast({ title: "Sucesso", description: "Material deletado com sucesso." });
       fetchMaterials();
@@ -119,52 +104,35 @@ export default function MaterialsList({ refreshTrigger, showDeleteButton = false
             <p className="text-xs text-muted-foreground mt-1 mb-4">
               Enquanto isso, que tal fazer um simulado?
             </p>
-            <Button
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              onClick={() => navigate("/simulado")}
-            >
+            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => navigate("/simulado")}>
               Iniciar Simulado
             </Button>
           </div>
         ) : (
           <div className="space-y-2">
             {materials.map((material) => (
-              <div
-                key={material.id}
-                className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors"
-              >
+              <div key={material.id} className="flex items-center justify-between p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3 flex-1">
                   <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5 text-accent" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm truncate">{material.title}</h4>
-                    {material.description && (
-                      <p className="text-xs text-muted-foreground truncate">{material.description}</p>
-                    )}
+                    <h4 className="font-medium text-sm truncate">{material.titulo}</h4>
+                    {material.descricao && <p className="text-xs text-muted-foreground truncate">{material.descricao}</p>}
                     <p className="text-xs text-muted-foreground">
                       {new Date(material.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-2">
-                  <a href={material.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="sm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </a>
+                  {material.file_url && (
+                    <a href={material.file_url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="ghost" size="sm"><Download className="w-4 h-4" /></Button>
+                    </a>
+                  )}
                   {showDeleteButton && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(material)}
-                      disabled={deleting === material.id}
-                    >
-                      {deleting === material.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      )}
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(material)} disabled={deleting === material.id}>
+                      {deleting === material.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 text-destructive" />}
                     </Button>
                   )}
                 </div>

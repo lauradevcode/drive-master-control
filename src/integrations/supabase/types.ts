@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          aluno_id: string
+          created_at: string | null
+          data_hora: string | null
+          id: string
+          instrutor_id: string
+          observacao: string | null
+          status: string | null
+        }
+        Insert: {
+          aluno_id: string
+          created_at?: string | null
+          data_hora?: string | null
+          id?: string
+          instrutor_id: string
+          observacao?: string | null
+          status?: string | null
+        }
+        Update: {
+          aluno_id?: string
+          created_at?: string | null
+          data_hora?: string | null
+          id?: string
+          instrutor_id?: string
+          observacao?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      assinaturas: {
+        Row: {
+          admin_id: string | null
+          autoescola_nome: string
+          created_at: string | null
+          id: string
+          plano: string | null
+          proximo_vencimento: string | null
+          status: string | null
+          trial_fim: string | null
+          trial_inicio: string | null
+          valor: number | null
+        }
+        Insert: {
+          admin_id?: string | null
+          autoescola_nome: string
+          created_at?: string | null
+          id?: string
+          plano?: string | null
+          proximo_vencimento?: string | null
+          status?: string | null
+          trial_fim?: string | null
+          trial_inicio?: string | null
+          valor?: number | null
+        }
+        Update: {
+          admin_id?: string | null
+          autoescola_nome?: string
+          created_at?: string | null
+          id?: string
+          plano?: string | null
+          proximo_vencimento?: string | null
+          status?: string | null
+          trial_fim?: string | null
+          trial_inicio?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
       documentos_instrutor: {
         Row: {
           created_at: string
@@ -106,6 +175,72 @@ export type Database = {
         }
         Relationships: []
       }
+      materiais: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          file_path: string | null
+          file_url: string | null
+          id: string
+          instrutor_id: string
+          tipo: string | null
+          titulo: string
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          file_path?: string | null
+          file_url?: string | null
+          id?: string
+          instrutor_id: string
+          tipo?: string | null
+          titulo: string
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          file_path?: string | null
+          file_url?: string | null
+          id?: string
+          instrutor_id?: string
+          tipo?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
+      matriculas: {
+        Row: {
+          aluno_id: string
+          aulas_concluidas: number | null
+          created_at: string | null
+          horas_estudo: number | null
+          id: string
+          instrutor_id: string
+          progresso: number | null
+          total_aulas: number | null
+        }
+        Insert: {
+          aluno_id: string
+          aulas_concluidas?: number | null
+          created_at?: string | null
+          horas_estudo?: number | null
+          id?: string
+          instrutor_id: string
+          progresso?: number | null
+          total_aulas?: number | null
+        }
+        Update: {
+          aluno_id?: string
+          aulas_concluidas?: number | null
+          created_at?: string | null
+          horas_estudo?: number | null
+          id?: string
+          instrutor_id?: string
+          progresso?: number | null
+          total_aulas?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -133,6 +268,39 @@ export type Database = {
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      simulados: {
+        Row: {
+          acertos: number | null
+          aluno_id: string
+          aprovado: boolean | null
+          created_at: string | null
+          id: string
+          nota: number | null
+          tempo_segundos: number | null
+          total_questoes: number | null
+        }
+        Insert: {
+          acertos?: number | null
+          aluno_id: string
+          aprovado?: boolean | null
+          created_at?: string | null
+          id?: string
+          nota?: number | null
+          tempo_segundos?: number | null
+          total_questoes?: number | null
+        }
+        Update: {
+          acertos?: number | null
+          aluno_id?: string
+          aprovado?: boolean | null
+          created_at?: string | null
+          id?: string
+          nota?: number | null
+          tempo_segundos?: number | null
+          total_questoes?: number | null
         }
         Relationships: []
       }
