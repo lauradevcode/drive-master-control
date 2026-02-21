@@ -45,7 +45,7 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
   const isActive = (href: string) => currentPath === href;
 
   return (
-    <header className="sticky top-0 z-50 h-16 bg-primary shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-50 h-16 bg-primary shadow-[0_2px_8px_rgba(0,0,0,0.15)] grid grid-cols-[auto_1fr_auto] items-center px-4 md:px-6">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 shrink-0">
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
@@ -56,7 +56,7 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
 
       {/* Center nav links — desktop/tablet only */}
       {navLinks && navLinks.length > 0 && (
-        <nav className="hidden md:flex items-center gap-1 mx-auto">
+        <nav className="hidden md:flex items-center justify-center gap-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -74,7 +74,7 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
       )}
 
       {/* Right side — desktop */}
-      <div className="flex items-center gap-3 ml-auto">
+      <div className="flex items-center justify-end gap-3">
         {/* Role switcher — desktop */}
         {hasMultipleRoles && (
           <DropdownMenu>
