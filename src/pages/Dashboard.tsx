@@ -251,7 +251,7 @@ export default function Dashboard() {
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-bold mb-1">
-              Bem-vindo ao CNH Pro! Vamos começar? 🎉
+              Bem-vindo ao CNH Fácil! Vamos começar? 🎉
             </h2>
             <p className="text-sm text-white/80 mb-6">
               Complete esses 3 passos para aproveitar tudo que o sistema oferece
