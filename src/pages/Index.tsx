@@ -123,7 +123,7 @@ export default function Index() {
 
       {/* ── NAVBAR ── */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border shadow-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
               <Car className="w-5 h-5 text-primary-foreground" />
@@ -142,7 +142,7 @@ export default function Index() {
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
             </Link>
-            <Link to="/instrutores">
+            <Link to="/instrutores/marketplace">
               <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-md hover:shadow-lg transition-all hover:scale-105">
                 Encontrar instrutor
               </Button>
@@ -162,7 +162,7 @@ export default function Index() {
             <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium py-2">Contato</a>
             <div className="flex gap-2 pt-2 border-t border-border">
               <Link to="/login" className="flex-1"><Button variant="outline" className="w-full" size="sm">Entrar</Button></Link>
-              <Link to="/instrutores" className="flex-1"><Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="sm">Encontrar instrutor</Button></Link>
+              <Link to="/instrutores/marketplace" className="flex-1"><Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="sm">Encontrar instrutor</Button></Link>
             </div>
           </div>
         )}
@@ -197,7 +197,7 @@ export default function Index() {
 
             <ScrollReveal animation="fade-up" delay={240}>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/instrutores">
+                <Link to="/instrutores/marketplace">
                   <Button size="lg" className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-base px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105 group">
                     Encontrar instrutor agora
                     <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
