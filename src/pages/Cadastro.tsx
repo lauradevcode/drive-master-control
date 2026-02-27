@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
+import { Zap, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Cadastro() {
@@ -89,10 +89,10 @@ export default function Cadastro() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Car className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
+              <Zap className="w-6 h-6 text-accent-foreground" />
             </div>
-            <span className="text-2xl font-bold">CNH Fácil</span>
+            <span className="text-2xl font-bold font-display">CNH Fácil</span>
           </Link>
         </div>
 

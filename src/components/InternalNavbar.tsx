@@ -17,7 +17,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Car, ChevronDown, User, Settings, LogOut, ArrowLeftRight, Menu } from "lucide-react";
+import { Zap, ChevronDown, User, Settings, LogOut, ArrowLeftRight, Menu } from "lucide-react";
 
 interface InternalNavbarProps {
   navLinks?: { label: string; href: string }[];
@@ -54,9 +54,9 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 shrink-0">
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-          <Car className="w-4 h-4 text-accent-foreground" />
+          <Zap className="w-4 h-4 text-accent-foreground" />
         </div>
-        <span className="text-base font-bold text-primary-foreground hidden sm:block">AutoEscola</span>
+        <span className="text-base font-bold text-primary-foreground hidden sm:block">CNH Fácil</span>
       </Link>
 
       {/* Center nav links — desktop/tablet only */}
@@ -160,9 +160,9 @@ export default function InternalNavbar({ navLinks }: InternalNavbarProps) {
             {/* Drawer header */}
             <div className="flex items-center gap-2 px-5 pt-5 pb-4 border-b border-primary-foreground/10">
               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                <Car className="w-4 h-4 text-accent-foreground" />
+                <Zap className="w-4 h-4 text-accent-foreground" />
               </div>
-              <span className="text-base font-bold text-primary-foreground">AutoEscola</span>
+              <span className="text-base font-bold text-primary-foreground">CNH Fácil</span>
             </div>
 
             {/* Nav links */}
