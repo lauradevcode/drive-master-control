@@ -34,7 +34,11 @@ import {
   Menu,
   MoreHorizontal,
   Mail,
+  ShieldCheck,
+  ShieldOff,
+  Loader2,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   XAxis,
   YAxis,
@@ -171,8 +175,10 @@ function AdminContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [clients, setClients] = useState<{ id: string; name: string; plan: string; value: number; status: string; nextBilling: string }[]>([]);
   const [revenueData, setRevenueData] = useState<{ month: string; value: number }[]>([]);
-  const [allUsers, setAllUsers] = useState<{ id: string; name: string; email: string; role: string; createdAt: string }[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [allUsers, setAllUsers] = useState<{ id: string; name: string; email: string; role: string; status: string; createdAt: string }[]>([]);
+  const [togglingUser, setTogglingUser] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -227,6 +233,11 @@ function AdminContent() {
           roleMap.set(r.user_id, existing);
         });
 
+        const profileStatusMap = new Map<string, string>();
+        (profiles || []).forEach((p: any) => {
+          profileStatusMap.set(p.user_id, p.status || "active");
+        });
+
         const usersData = (profiles || []).map((p: any) => {
           const userRoles = roleMap.get(p.user_id) || ["user"];
           const mainRole = userRoles.includes("admin")
@@ -239,6 +250,7 @@ function AdminContent() {
             name: p.full_name || "—",
             email: p.email || "—",
             role: mainRole,
+            status: p.status || "active",
             createdAt: new Date(p.created_at).toLocaleDateString("pt-BR"),
           };
         });
@@ -251,6 +263,22 @@ function AdminContent() {
     };
     fetchData();
   }, [user]);
+
+  const toggleInstrutorStatus = async (userId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    setTogglingUser(userId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ status: newStatus } as any)
+      .eq("user_id", userId as any);
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível alterar o status." });
+    } else {
+      toast({ title: "Sucesso", description: `Instrutor ${newStatus === "active" ? "ativado" : "desativado"}.` });
+      setAllUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status: newStatus } : u));
+    }
+    setTogglingUser(null);
+  };
 
   if (loading || dataLoading) return <AdminSkeleton />;
   if (!user) return <Navigate to="/login" replace />;
@@ -501,6 +529,7 @@ function AdminContent() {
                         <TableHead className="text-xs font-semibold">Nome</TableHead>
                         <TableHead className="text-xs font-semibold">Email</TableHead>
                         <TableHead className="text-xs font-semibold">Categoria</TableHead>
+                        <TableHead className="text-xs font-semibold">Status</TableHead>
                         <TableHead className="text-xs font-semibold">Cadastro</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -524,6 +553,31 @@ function AdminContent() {
                             }`}>
                               {u.role}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {u.role === "Instrutor" ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={togglingUser === u.id}
+                                onClick={() => toggleInstrutorStatus(u.id, u.status)}
+                                className={`h-7 px-2.5 text-xs font-medium gap-1.5 ${
+                                  u.status === "active"
+                                    ? "text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50"
+                                    : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                                }`}
+                              >
+                                {togglingUser === u.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : u.status === "active" ? (
+                                  <><ShieldCheck className="w-3.5 h-3.5" /> Ativo</>
+                                ) : (
+                                  <><ShieldOff className="w-3.5 h-3.5" /> Inativo</>
+                                )}
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">{u.createdAt}</TableCell>
                         </TableRow>
