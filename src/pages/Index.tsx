@@ -123,15 +123,15 @@ export default function Index() {
 
       {/* ── NAVBAR ── */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border shadow-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2 group">
+        <div className="container mx-auto px-4 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
             <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
               <Car className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold text-foreground">{BRAND}</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden md:flex items-center justify-center gap-7">
             <a href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Como funciona</a>
             <a href="#instrutores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Para instrutores</a>
             <a href="#seguranca" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Segurança</a>
