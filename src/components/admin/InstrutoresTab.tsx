@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   CheckCircle,
@@ -31,6 +32,7 @@ import {
   Phone,
   FileText,
   Calendar,
+  Power,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -84,6 +86,7 @@ export default function InstrutoresTab() {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [toggleConfirm, setToggleConfirm] = useState<{ instrutor: Instrutor; newStatus: string } | null>(null);
 
   useEffect(() => {
     fetchInstrutores();
@@ -222,14 +225,17 @@ export default function InstrutoresTab() {
           ) : (
             <div className="rounded-b-lg overflow-hidden">
               <Table>
-                <TableHeader>
+                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Cidade</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Valor/Aula</TableHead>
+                    <TableHead>Pacotes</TableHead>
+                    <TableHead>Vendas</TableHead>
+                    <TableHead>Comissão</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Cadastro</TableHead>
+                    <TableHead>Ativo</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -259,13 +265,38 @@ export default function InstrutoresTab() {
                       <TableCell className="text-sm">
                         {inst.valor_aula ? `R$ ${Number(inst.valor_aula).toFixed(2).replace(".", ",")}` : "—"}
                       </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">0</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">R$ 0,00</TableCell>
+                      <TableCell className="text-sm font-medium text-emerald-600">R$ 0,00</TableCell>
                       <TableCell>
                         <Badge className={`text-xs border ${STATUS_LABELS[inst.status]?.class ?? ""}`}>
                           {STATUS_LABELS[inst.status]?.label ?? inst.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(inst.created_at).toLocaleDateString("pt-BR")}
+                      <TableCell>
+                        {inst.status === "aprovado" ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-emerald-700 hover:text-red-600 hover:bg-red-50"
+                            disabled={updating === inst.id}
+                            onClick={() => setToggleConfirm({ instrutor: inst, newStatus: "pendente" })}
+                          >
+                            {updating === inst.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Power className="w-3.5 h-3.5" /> Ativo</>}
+                          </Button>
+                        ) : inst.status === "pendente" ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-amber-600 hover:text-emerald-600 hover:bg-emerald-50"
+                            disabled={updating === inst.id}
+                            onClick={() => setToggleConfirm({ instrutor: inst, newStatus: "aprovado" })}
+                          >
+                            {updating === inst.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Power className="w-3.5 h-3.5" /> Inativo</>}
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -290,18 +321,6 @@ export default function InstrutoresTab() {
                               className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                               disabled={updating === inst.id}
                               onClick={() => updateStatus(inst.id, "rejeitado")}
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          )}
-                          {inst.status === "aprovado" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground"
-                              disabled={updating === inst.id}
-                              onClick={() => updateStatus(inst.id, "pendente")}
-                              title="Desativar"
                             >
                               <XCircle className="w-4 h-4" />
                             </Button>
@@ -490,6 +509,47 @@ export default function InstrutoresTab() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Toggle Confirmation Modal */}
+      <Dialog open={!!toggleConfirm} onOpenChange={(open) => { if (!open) setToggleConfirm(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {toggleConfirm?.newStatus === "aprovado" ? "Ativar Instrutor" : "Desativar Instrutor"}
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Tem certeza que deseja {toggleConfirm?.newStatus === "aprovado" ? "ativar" : "desativar"} o instrutor{" "}
+              <strong>{toggleConfirm?.instrutor.full_name}</strong>?
+              {toggleConfirm?.newStatus === "pendente" && (
+                <span className="block mt-2 text-destructive">O instrutor não aparecerá mais no marketplace e não poderá receber novos alunos.</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setToggleConfirm(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={toggleConfirm?.newStatus === "aprovado" ? "default" : "destructive"}
+              className="flex-1"
+              disabled={updating === toggleConfirm?.instrutor.id}
+              onClick={async () => {
+                if (!toggleConfirm) return;
+                await updateStatus(toggleConfirm.instrutor.id, toggleConfirm.newStatus);
+                setToggleConfirm(null);
+              }}
+            >
+              {updating === toggleConfirm?.instrutor.id ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : toggleConfirm?.newStatus === "aprovado" ? (
+                "Ativar"
+              ) : (
+                "Desativar"
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
