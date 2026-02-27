@@ -18,6 +18,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   DollarSign,
   Users,
   TrendingUp,
@@ -25,6 +33,7 @@ import {
   HelpCircle,
   Menu,
   MoreHorizontal,
+  Mail,
 } from "lucide-react";
 import {
   XAxis,
@@ -162,6 +171,7 @@ function AdminContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [clients, setClients] = useState<{ id: string; name: string; plan: string; value: number; status: string; nextBilling: string }[]>([]);
   const [revenueData, setRevenueData] = useState<{ month: string; value: number }[]>([]);
+  const [allUsers, setAllUsers] = useState<{ id: string; name: string; email: string; role: string; createdAt: string }[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
@@ -199,6 +209,40 @@ function AdminContent() {
           chartData.push({ month: monthLabel, value: total });
         }
         setRevenueData(chartData);
+
+        // Fetch all users with roles
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, email, created_at")
+          .order("created_at", { ascending: false });
+
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("user_id, role");
+
+        const roleMap = new Map<string, string[]>();
+        (roles || []).forEach((r: any) => {
+          const existing = roleMap.get(r.user_id) || [];
+          existing.push(r.role);
+          roleMap.set(r.user_id, existing);
+        });
+
+        const usersData = (profiles || []).map((p: any) => {
+          const userRoles = roleMap.get(p.user_id) || ["user"];
+          const mainRole = userRoles.includes("admin")
+            ? "Admin"
+            : userRoles.includes("instrutor")
+            ? "Instrutor"
+            : "Aluno";
+          return {
+            id: p.user_id,
+            name: p.full_name || "—",
+            email: p.email || "—",
+            role: mainRole,
+            createdAt: new Date(p.created_at).toLocaleDateString("pt-BR"),
+          };
+        });
+        setAllUsers(usersData);
       } catch {
         console.log("Failed to fetch admin data");
       } finally {
@@ -435,6 +479,61 @@ function AdminContent() {
               </Card>
             ))}
           </div>
+
+          {/* Line 4 — Users table */}
+          <Card className="bg-card border border-border shadow-sm mt-6 md:mt-8">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4 text-accent" />
+                Usuários Cadastrados ({allUsers.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {allUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Nenhum usuário cadastrado ainda.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="text-xs font-semibold">Nome</TableHead>
+                        <TableHead className="text-xs font-semibold">Email</TableHead>
+                        <TableHead className="text-xs font-semibold">Categoria</TableHead>
+                        <TableHead className="text-xs font-semibold">Cadastro</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allUsers.map((u) => (
+                        <TableRow key={u.id} className="hover:bg-muted/30">
+                          <TableCell className="text-sm font-medium">{u.name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1.5">
+                              <Mail className="w-3.5 h-3.5 shrink-0" />
+                              {u.email}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`text-[10px] border-0 ${
+                              u.role === "Admin"
+                                ? "bg-violet-100 text-violet-700"
+                                : u.role === "Instrutor"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-emerald-100 text-emerald-700"
+                            }`}>
+                              {u.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{u.createdAt}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>
