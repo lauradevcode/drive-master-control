@@ -131,11 +131,11 @@ export default function Index() {
             <span className="font-display text-xl font-bold text-foreground">{BRAND}</span>
           </Link>
 
-          <nav className="hidden md:flex items-center justify-center gap-7">
-            <a href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Como funciona</a>
-            <a href="#instrutores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Para instrutores</a>
-            <a href="#seguranca" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Segurança</a>
-            <a href="#contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Contato</a>
+          <nav className="hidden md:flex items-center justify-center gap-7 h-full">
+            <a href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors leading-none min-h-0 flex items-center">Como funciona</a>
+            <a href="#instrutores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors leading-none min-h-0 flex items-center">Para instrutores</a>
+            <a href="#seguranca" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors leading-none min-h-0 flex items-center">Segurança</a>
+            <a href="#contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors leading-none min-h-0 flex items-center">Contato</a>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
