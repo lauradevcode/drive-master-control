@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Car, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Zap, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -66,10 +65,10 @@ export default function Login() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Car className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
+              <Zap className="w-6 h-6 text-accent-foreground" />
             </div>
-            <span className="text-2xl font-bold">CNH Fácil</span>
+            <span className="text-2xl font-bold font-display">CNH Fácil</span>
           </Link>
         </div>
 
@@ -117,12 +116,14 @@ export default function Login() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="remember" />
-                <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
-                  Lembrar minha senha
-                </Label>
-              </div>
+              <label htmlFor="remember" className="flex items-center gap-2.5 cursor-pointer select-none group">
+                <div className="relative">
+                  <input type="checkbox" id="remember" className="peer sr-only" />
+                  <div className="w-9 h-5 rounded-full bg-muted border border-border transition-colors peer-checked:bg-accent peer-checked:border-accent" />
+                  <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
+                </div>
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Lembrar minha senha</span>
+              </label>
               <Button type="submit" className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={isLoading}>
                 {isLoading ? (
                   <>
