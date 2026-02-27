@@ -28,8 +28,8 @@ export function AnimatedStat({
 
   return (
     <div ref={elementRef} className={cn("space-y-2 text-center", className)}>
-      <div className="text-3xl md:text-5xl font-bold">{formattedCount}</div>
-      <div className="text-primary-foreground/80 text-sm md:text-base">{label}</div>
+      <div className="text-2xl md:text-5xl font-bold">{formattedCount}</div>
+      <div className="text-primary-foreground/80 text-xs md:text-base">{label}</div>
     </div>
   );
 }
