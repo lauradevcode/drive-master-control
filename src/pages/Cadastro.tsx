@@ -68,7 +68,7 @@ export default function Cadastro() {
             </div>
             <CardTitle className="text-2xl">Cadastro Realizado!</CardTitle>
             <CardDescription className="text-base">
-              Seu cadastro foi enviado com sucesso. Aguarde a aprovação do administrador para acessar o sistema.
+              Enviamos um link de confirmação para o seu email. Por favor, verifique sua caixa de entrada (e spam) para ativar sua conta.
             </CardDescription>
             <div className="pt-4 space-y-3">
               <Button onClick={() => navigate("/login")} className="w-full">
@@ -92,7 +92,7 @@ export default function Cadastro() {
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <Car className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold">AutoEscola</span>
+            <span className="text-2xl font-bold">CNH Fácil</span>
           </Link>
         </div>
 
@@ -104,7 +104,7 @@ export default function Cadastro() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Nome Completo</Label>
                 <Input
@@ -115,6 +115,7 @@ export default function Cadastro() {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   disabled={isLoading}
+                  autoComplete="name"
                 />
               </div>
               <div className="space-y-2">
@@ -127,6 +128,7 @@ export default function Cadastro() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
@@ -140,6 +142,7 @@ export default function Cadastro() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isLoading}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -160,6 +163,7 @@ export default function Cadastro() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  autoComplete="new-password"
                 />
               </div>
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
