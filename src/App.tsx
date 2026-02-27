@@ -13,6 +13,7 @@ import PendingAccount from "./pages/PendingAccount";
 import Simulado from "./pages/Simulado";
 import Admin from "./pages/Admin";
 import AdminFinanceiro from "./pages/admin/Financeiro";
+import AdminVendasComissoes from "./pages/admin/VendasComissoes";
 import NotFound from "./pages/NotFound";
 import InstrutoresMarketplace from "./pages/instrutores/Index";
 import PerfilInstrutor from "./pages/instrutores/Perfil";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/simulado" element={<Simulado />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/financeiro" element={<AdminFinanceiro />} />
+            <Route path="/admin/vendas" element={<AdminVendasComissoes />} />
             {/* Instrutores */}
             <Route path="/instrutores" element={<InstrutoresAluno />} />
             <Route path="/instrutores/marketplace" element={<InstrutoresMarketplace />} />

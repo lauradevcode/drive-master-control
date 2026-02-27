@@ -23,8 +23,8 @@ const navGroups = [
   {
     label: "FINANCEIRO",
     items: [
-      { label: "Receita e Assinaturas", href: "/admin/financeiro", icon: DollarSign },
-      { label: "Faturas e Cobranças", href: "/admin/faturas", icon: FileText },
+      { label: "Vendas e Comissões", href: "/admin/vendas", icon: DollarSign },
+      { label: "Receita e Assinaturas", href: "/admin/financeiro", icon: FileText },
       { label: "Projeções", href: "/admin/projecoes", icon: TrendingUp },
     ],
   },
