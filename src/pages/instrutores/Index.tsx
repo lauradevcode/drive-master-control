@@ -132,14 +132,6 @@ export default function InstrutoresMarketplace() {
               </Link>
             )}
 
-            {/* Se é admin, atalho pro painel admin */}
-            {isAdmin && (
-              <Link to="/admin">
-                <Button variant="outline" size="sm">
-                  Painel Admin
-                </Button>
-              </Link>
-            )}
 
             {/* Entrar — apenas para não logados */}
             {!user && (
