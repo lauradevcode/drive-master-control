@@ -53,6 +53,7 @@ export default function CadastroInstrutor() {
     estado: "",
     categoria: "",
     tipo_veiculo: "",
+    uso_veiculo: "",
     valor_aula: "",
     whatsapp: "",
     descricao: "",
@@ -160,8 +161,9 @@ export default function CadastroInstrutor() {
         credenciamento_numero: form.credenciamento_numero.trim() || null,
         cidade: form.cidade.trim(),
         estado: form.estado,
-        categoria: form.categoria as any,
-        tipo_veiculo: form.tipo_veiculo as any,
+        categoria: form.categoria,
+        tipo_veiculo: form.tipo_veiculo,
+        uso_veiculo: form.uso_veiculo,
         valor_aula: form.valor_aula ? parseFloat(form.valor_aula.replace(",", ".")) : null,
         whatsapp: form.whatsapp.trim(),
         descricao: form.descricao.trim() || null,
@@ -377,6 +379,17 @@ export default function CadastroInstrutor() {
                 </div>
               </div>
               <div className="space-y-1.5">
+                <Label>Uso do veículo *</Label>
+                <Select value={form.uso_veiculo} onValueChange={(v) => updateForm("uso_veiculo", v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="proprio">Carro próprio do instrutor</SelectItem>
+                    <SelectItem value="aluno">Carro do aluno</SelectItem>
+                    <SelectItem value="ambos">Ambos (próprio ou do aluno)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
                 <Label htmlFor="valor">Valor por aula (R$)</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -398,7 +411,7 @@ export default function CadastroInstrutor() {
                 <Button
                   className="flex-1"
                   onClick={() => {
-                    if (!form.credenciamento_numero || !form.categoria || !form.tipo_veiculo) {
+                    if (!form.credenciamento_numero || !form.categoria || !form.tipo_veiculo || !form.uso_veiculo) {
                       toast({ variant: "destructive", title: "Campos obrigatórios", description: "Preencha todos os campos marcados com *." });
                       return;
                     }
