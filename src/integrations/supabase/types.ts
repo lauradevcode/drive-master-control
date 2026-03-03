@@ -134,6 +134,7 @@ export type Database = {
           tipo_veiculo: string
           updated_at: string
           user_id: string | null
+          uso_veiculo: string
           valor_aula: number | null
           whatsapp: string
         }
@@ -152,6 +153,7 @@ export type Database = {
           tipo_veiculo: string
           updated_at?: string
           user_id?: string | null
+          uso_veiculo?: string
           valor_aula?: number | null
           whatsapp: string
         }
@@ -170,6 +172,7 @@ export type Database = {
           tipo_veiculo?: string
           updated_at?: string
           user_id?: string | null
+          uso_veiculo?: string
           valor_aula?: number | null
           whatsapp?: string
         }
